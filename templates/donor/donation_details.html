@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="fw-bold mb-4">Donation Details</h2>
+        <div class="row">
+            <div class="col-md-4">
+                {% if donation.image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ donation.image) }}" class="img-fluid rounded" alt="Donation image">
+                {% else %}
+                    <div class="bg-light p-5 text-center rounded">No image available</div>
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <h4>{{ donation.food_name }}</h4>
+                <p><strong>Quantity:</strong> {{ donation.quantity }}</p>
+                <p><strong>Pickup Address:</strong> {{ donation.pickup_address }}</p>
+                <p><strong>Pickup Time:</strong> {{ donation.pickup_time }}</p>
+                <p><strong>Expiry Time:</strong> {{ donation.expiry_time }}</p>
+                <p><strong>Status:</strong> {{ donation.status }}</p>
+                <p><strong>Donor:</strong> {{ donation.donor.name }}</p>
+                {% if current_user.role == 'ngo' and donation.status == 'Available' %}
+                    <form method="post" action="{{ url_for('ngo.accept_donation', donation_id=donation.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-success" type="submit">Accept Donation</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

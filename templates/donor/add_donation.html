@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="fw-bold mb-4">Add Food Donation</h2>
+        <form method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="row g-3">
+                <div class="col-md-6">{{ form.food_name.label(class='form-label') }}{{ form.food_name(class='form-control') }}</div>
+                <div class="col-md-6">{{ form.food_category.label(class='form-label') }}{{ form.food_category(class='form-select') }}</div>
+                <div class="col-md-6">{{ form.food_type.label(class='form-label') }}{{ form.food_type(class='form-select') }}</div>
+                <div class="col-md-6">{{ form.quantity.label(class='form-label') }}{{ form.quantity(class='form-control') }}</div>
+                <div class="col-md-6">{{ form.servings.label(class='form-label') }}{{ form.servings(class='form-control') }}</div>
+                <div class="col-md-6">{{ form.pickup_address.label(class='form-label') }}{{ form.pickup_address(class='form-control') }}</div>
+                <div class="col-md-6">{{ form.pickup_location.label(class='form-label') }}{{ form.pickup_location(class='form-control') }}</div>
+                <div class="col-md-6">{{ form.pickup_time.label(class='form-label') }}{{ form.pickup_time(class='form-control') }}</div>
+                <div class="col-md-6">{{ form.expiry_time.label(class='form-label') }}{{ form.expiry_time(class='form-control') }}</div>
+                <div class="col-12">{{ form.image.label(class='form-label') }}{{ form.image(class='form-control') }}</div>
+                <div class="col-12">{{ form.additional_notes.label(class='form-label') }}{{ form.additional_notes(class='form-control', rows=4) }}</div>
+            </div>
+            <button class="btn btn-primary mt-4" type="submit">Post Donation</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

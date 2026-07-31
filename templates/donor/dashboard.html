@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><h6>Total Donations</h6><h3>{{ donations|length }}</h3></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><h6>Meals Saved</h6><h3>0</h3></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><h6>Pending</h6><h3>0</h3></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><h6>Completed</h6><h3>0</h3></div></div></div>
+</div>
+<div class="d-flex gap-2 mb-4">
+    <a href="{{ url_for('donor.add_donation') }}" class="btn btn-primary">Add Donation</a>
+    <a href="{{ url_for('donor.my_donations') }}" class="btn btn-outline-primary">View Donations</a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4 class="mb-3">Recent Donations</h4>
+        <ul class="list-group">
+            {% for donation in donations %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ donation.food_name }} - {{ donation.status }}</span>
+                    <a href="{{ url_for('donor.donation_details', donation_id=donation.id) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                </li>
+            {% else %}
+                <li class="list-group-item">No donations yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div class="bg-success text-white rounded-4 p-5 mb-5 shadow">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold">
+                Share Food, Save Lives
+            </h1>
+
+            <p class="lead mt-3">
+                Reduce food waste by donating surplus food to verified NGOs.
+                Together we can fight hunger and make a positive impact on society.
+            </p>
+
+            <div class="mt-4">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg me-3">
+                    Donate Food
+                </a>
+
+                <a href="{{ url_for('public.about') }}" class="btn btn-outline-light btn-lg">
+                    Learn More
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-6 text-center">
+            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=700"
+                 class="img-fluid rounded-4 shadow"
+                 alt="Food Donation">
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="row text-center mb-5">
+
+    <div class="col-md-3">
+        <div class="card shadow border-0 p-4">
+            <i class="fas fa-utensils fa-3x text-success mb-3"></i>
+            <h2>520+</h2>
+            <p class="text-muted">Food Donations</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow border-0 p-4">
+            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+            <h2>1400+</h2>
+            <p class="text-muted">People Served</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow border-0 p-4">
+            <i class="fas fa-hand-holding-heart fa-3x text-danger mb-3"></i>
+            <h2>35+</h2>
+            <p class="text-muted">Verified NGOs</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow border-0 p-4">
+            <i class="fas fa-leaf fa-3x text-warning mb-3"></i>
+            <h2>2 Tons</h2>
+            <p class="text-muted">Food Saved</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- How It Works -->
+<div class="mb-5">
+
+    <h2 class="text-center fw-bold mb-4">
+        How It Works
+    </h2>
+
+    <div class="row text-center">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-4 h-100">
+                <i class="fas fa-plus-circle fa-3x text-success mb-3"></i>
+
+                <h4>1. Donate Food</h4>
+
+                <p class="text-muted">
+                    Restaurants, hotels and individuals can post available food with quantity and pickup details.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-4 h-100">
+                <i class="fas fa-truck fa-3x text-primary mb-3"></i>
+
+                <h4>2. NGO Accepts</h4>
+
+                <p class="text-muted">
+                    Verified NGOs receive notifications and accept the donation request.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-4 h-100">
+                <i class="fas fa-heart fa-3x text-danger mb-3"></i>
+
+                <h4>3. Feed People</h4>
+
+                <p class="text-muted">
+                    The donated food reaches orphanages, shelters, and people in need.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Why Choose Us -->
+<div class="bg-light rounded-4 p-5 shadow mb-5">
+
+    <h2 class="text-center fw-bold mb-5">
+        Why Choose FoodShare?
+    </h2>
+
+    <div class="row">
+
+        <div class="col-md-4 text-center">
+
+            <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+
+            <h4>Verified NGOs</h4>
+
+            <p>
+                Only trusted NGOs can collect donated food ensuring transparency.
+            </p>
+
+        </div>
+
+        <div class="col-md-4 text-center">
+
+            <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+
+            <h4>Quick Pickup</h4>
+
+            <p>
+                NGOs receive instant notifications for nearby food donations.
+            </p>
+
+        </div>
+
+        <div class="col-md-4 text-center">
+
+            <i class="fas fa-globe fa-3x text-primary mb-3"></i>
+
+            <h4>Reduce Food Waste</h4>
+
+            <p>
+                Every donation helps reduce food waste and feeds someone in need.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Call To Action -->
+
+<div class="bg-success text-white rounded-4 p-5 text-center">
+
+    <h2 class="fw-bold">
+        Together We Can End Hunger
+    </h2>
+
+    <p class="lead">
+        Join FoodShare today and become a part of the food donation movement.
+    </p>
+
+    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg mt-3">
+        Get Started
+    </a>
+
+</div>
+
+{% endblock %}

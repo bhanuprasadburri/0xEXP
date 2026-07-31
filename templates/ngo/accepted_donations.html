@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="fw-bold mb-4">Accepted Donations</h2>
+        <ul class="list-group">
+            {% for donation in donations %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">{{ donation.food_name }}</div>
+                        <div class="text-muted">{{ donation.pickup_address }} • {{ donation.status }}</div>
+                    </div>
+                    {% if donation.status == 'Completed' %}
+                        <span class="badge bg-success">Completed</span>
+                    {% else %}
+                        <form method="post" action="{{ url_for('ngo.pickup_status', donation_id=donation.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Update Status</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% else %}
+                <li class="list-group-item">No accepted donations.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><h6>Available Donations</h6><h3>{{ available|length }}</h3></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><h6>Accepted Donations</h6><h3>{{ accepted|length }}</h3></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><h6>Completed Donations</h6><h3>{{ completed|length }}</h3></div></div></div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4 class="mb-3">Available Donations</h4>
+        <ul class="list-group">
+            {% for donation in available %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ donation.food_name }} - {{ donation.pickup_address }}</span>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('donor.donation_details', donation_id=donation.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                        <form method="post" action="{{ url_for('ngo.accept_donation', donation_id=donation.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-success" type="submit">Accept</button>
+                        </form>
+                    </div>
+                </li>
+            {% else %}
+                <li class="list-group-item">No donations available.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

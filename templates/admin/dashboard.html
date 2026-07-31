@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="fw-bold mb-3">Admin Dashboard</h3>
+                <h5>Registered NGOs</h5>
+                <ul class="list-group mb-3">
+                    {% for ngo in ngos %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ ngo.organization_name }} ({{ ngo.registration_number }}) - <strong>{{ ngo.status|title }}</strong></span>
+                            <div>
+                                {% if ngo.status != 'verified' %}
+                                <form method="post" action="{{ url_for('admin.approve_ngo', ngo_id=ngo.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                {% endif %}
+                                <form method="post" action="{{ url_for('admin.reject_ngo', ngo_id=ngo.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-danger">Reject</button>
+                                </form>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item">No NGOs registered.</li>
+                    {% endfor %}
+                </ul>
+                <h5>All Donations</h5>
+                <ul class="list-group">
+                    {% for donation in donations %}
+                        <li class="list-group-item">{{ donation.food_name }} - {{ donation.status }} - {{ donation.donor.name }}</li>
+                    {% else %}
+                        <li class="list-group-item">No donations found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Manage Users</h5>
+                <ul class="list-group">
+                    {% for user in users %}
+                        {% if user.role != 'admin' %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ user.name }} ({{ user.role }})</span>
+                            <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

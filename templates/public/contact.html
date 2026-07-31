@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <!-- Heading -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-success">
+            Contact Us
+        </h1>
+
+        <p class="lead text-muted">
+            We'd love to hear from you. Feel free to contact us for any questions or support.
+        </p>
+    </div>
+
+    <div class="row">
+
+        <!-- Contact Information -->
+
+        <div class="col-lg-5 mb-4">
+
+            <div class="card shadow border-0 h-100">
+
+                <div class="card-body p-4">
+
+                    <h3 class="text-success mb-4">
+                        Get In Touch
+                    </h3>
+
+                    <p>
+                        <i class="fas fa-map-marker-alt text-success me-3"></i>
+
+                        Narasaraopet, Andhra Pradesh, India
+                    </p>
+
+                    <p>
+                        <i class="fas fa-phone text-success me-3"></i>
+
+                        +91 98765 43210
+                    </p>
+
+                    <p>
+                        <i class="fas fa-envelope text-success me-3"></i>
+
+                        foodshare@gmail.com
+                    </p>
+
+                    <p>
+                        <i class="fas fa-clock text-success me-3"></i>
+
+                        Monday - Saturday<br>
+                        9:00 AM - 6:00 PM
+                    </p>
+
+                    <hr>
+
+                    <h5 class="mb-3">
+                        Follow Us
+                    </h5>
+
+                    <a href="#" class="me-3 text-success fs-3">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+
+                    <a href="#" class="me-3 text-danger fs-3">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+
+                    <a href="#" class="me-3 text-primary fs-3">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+
+                    <a href="#" class="text-dark fs-3">
+                        <i class="fab fa-github"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Contact Form -->
+
+        <div class="col-lg-7">
+
+            <div class="card shadow border-0">
+
+                <div class="card-body p-5">
+
+                    <h3 class="text-success mb-4">
+                        Send us a Message
+                    </h3>
+
+                    <form method="POST" action="{{ url_for('public.contact') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Full Name
+                            </label>
+
+                            <input
+    type="text"
+    name="name"
+    class="form-control"
+    placeholder="Enter your name"
+    required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Email Address
+                            </label>
+
+                            <input
+    type="email"
+    name="email"
+    class="form-control"
+    placeholder="Enter your email"
+    required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Subject
+                            </label>
+
+                            <input
+    type="text"
+    name="subject"
+    class="form-control"
+    placeholder="Enter subject"
+    required>
+
+                        </div>
+
+                        <div class="mb-4">
+
+                            <label class="form-label">
+                                Message
+                            </label>
+
+                            <textarea
+    name="message"
+    rows="5"
+    class="form-control"
+    placeholder="Write your message here..."
+    required></textarea>
+
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100">
+
+                            <i class="fas fa-paper-plane me-2"></i>
+
+                            Send Message
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
