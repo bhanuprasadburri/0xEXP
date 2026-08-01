@@ -12,6 +12,7 @@
 {% block content %}
 <div class="dashboard-page" id="dashboardPage">
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
 
     <aside class="dashboard-sidebar" id="donorSidebar" data-mobile-open="false">
         <div class="sidebar-header">
@@ -61,17 +62,13 @@
                 <span class="nav-icon"><i data-lucide="circle-user-round"></i></span>
                 <span>Profile</span>
             </a>
-            <a class="nav-item" href="#settings">
-                <span class="nav-icon"><i data-lucide="sliders-horizontal"></i></span>
-                <span>Settings</span>
-            </a>
         </nav>
 
         <div class="sidebar-card">
             <div class="sidebar-card-head">
-                <div class="avatar-pill">{{ current_user.name[0].upper() if current_user.name else 'D' }}</div>
+                <div class="avatar-pill">{{ (current_user.full_name or current_user.name or 'D')[0].upper() }}</div>
                 <div>
-                    <p>{{ current_user.name }}</p>
+                    <p>{{ current_user.full_name or current_user.name or 'Donor' }}</p>
                     <span>Food donor</span>
                 </div>
             </div>
@@ -83,6 +80,26 @@
     </aside>
 
     <div class="dashboard-panel">
+        <div id="mobileMenuPanel" class="mobile-menu-panel" role="dialog" aria-label="Mobile navigation panel">
+            <div class="mobile-menu-panel-head">
+                <div>
+                    <p class="section-kicker">Navigation</p>
+                    <h3>Donor workspace</h3>
+                </div>
+                <button id="closeMobileMenu" type="button" class="mobile-close-button" aria-label="Close navigation panel">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <nav class="mobile-menu-nav" aria-label="Mobile donor navigation">
+                <a class="nav-item" href="{{ url_for('donor.dashboard') }}">Overview</a>
+                <a class="nav-item" href="{{ url_for('donor.add_donation') }}">Add Donation</a>
+                <a class="nav-item" href="{{ url_for('donor.my_donations') }}">My Donations</a>
+                <a class="nav-item" href="{{ url_for('donor.donation_history') }}">History</a>
+                <a class="nav-item" href="{{ url_for('auth.profile') }}">Profile</a>
+                <a class="nav-item" href="{{ url_for('auth.logout') }}">Logout</a>
+            </nav>
+        </div>
+
         <header class="topbar">
             <div class="topbar-left">
                 <button id="mobileMenuButton" type="button" class="mobile-menu-trigger" aria-label="Open navigation menu" aria-expanded="false">
@@ -90,7 +107,7 @@
                 </button>
                 <div class="page-title-group">
                     <p class="section-kicker">Donor workspace</p>
-                    <h1>Donor Workspace</h1>
+                    <h1>Welcome back</h1>
                 </div>
             </div>
 
@@ -99,7 +116,6 @@
                     <i data-lucide="search"></i>
                     <input id="globalSearch" type="text" placeholder="Search donations..." aria-label="Search donations">
                 </label>
-
                 <div class="topbar-actions">
                     <div class="dropdown-shell">
                         <button id="notificationsButton" type="button" class="icon-button" aria-label="Notifications" aria-expanded="false">
@@ -110,27 +126,29 @@
                             <div class="menu-head">
                                 <div>
                                     <p>Notifications</p>
-                                    <span>3 new updates</span>
+                                    <span>{{ activity_items|length }} updates</span>
                                 </div>
                                 <button type="button">View all</button>
                             </div>
                             <div class="menu-items">
+                                {% for item in activity_items[:3] %}
                                 <div class="menu-card success">
                                     <div class="menu-icon"><i data-lucide="check-circle-2"></i></div>
                                     <div>
-                                        <p>Donation accepted</p>
-                                        <span>Your latest pickup request was confirmed.</span>
+                                        <p>{{ item.title }}</p>
+                                        <span>{{ item.detail }}</span>
                                     </div>
                                 </div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
 
                     <div class="dropdown-shell profile-shell">
                         <button id="profileButton" type="button" class="profile-chip" aria-expanded="false">
-                            <span class="profile-avatar">{{ current_user.name[0].upper() if current_user.name else 'D' }}</span>
+                            <span class="profile-avatar">{{ (current_user.full_name or current_user.name or 'D')[0].upper() }}</span>
                             <span class="profile-meta">
-                                <span class="profile-name">{{ current_user.name }}</span>
+                                <span class="profile-name">{{ current_user.full_name or current_user.name or 'Donor' }}</span>
                                 <small>Donor</small>
                             </span>
                             <i data-lucide="chevron-down"></i>
@@ -138,7 +156,7 @@
                         <div id="profileMenu" class="navbar-menu profile-menu" role="menu" aria-label="Profile options">
                             <div class="menu-head compact">
                                 <div>
-                                    <p>{{ current_user.name }}</p>
+                                    <p>{{ current_user.full_name or current_user.name or 'Donor' }}</p>
                                     <span>Food donor • active</span>
                                 </div>
                             </div>
@@ -155,26 +173,26 @@
             <section class="hero-card">
                 <div class="hero-copy">
                     <p class="section-kicker">0xEXP • impact workspace</p>
-                    <h2>Good morning, {{ current_user.name.split()[0] if current_user.name else 'there' }} 👋</h2>
-                    <p>Thank you for helping reduce food waste. Your donations are making a measurable difference in your community.</p>
+                    <h2>Welcome back, {{ current_user.full_name.split()[0] if current_user.full_name else current_user.name.split()[0] if current_user.name else 'there' }}</h2>
+                    <p>Your generosity is turning surplus food into measurable community impact. Keep the momentum going.</p>
+                    <p class="hero-summary">You have posted <strong>{{ donations|length }}</strong> donation{{ 's' if donations|length != 1 else '' }}.</p>
                     <div class="hero-actions">
-                        <a href="{{ url_for('donor.add_donation') }}" class="primary-btn">+ Add Food Donation</a>
-                        <a href="{{ url_for('donor.my_donations') }}" class="secondary-btn">View donations</a>
+                        <a href="{{ url_for('donor.add_donation') }}" class="primary-btn">+ New Donation</a>
+                        <a href="{{ url_for('donor.my_donations') }}" class="secondary-btn">View Donations</a>
                     </div>
                 </div>
-
-                <div class="hero-summary">
-                    <div class="summary-item">
-                        <span class="summary-label">Meals donated</span>
-                        <strong>{{ stats[0].value if stats else 0 }}</strong>
+                <div class="hero-metrics">
+                    <div class="hero-metric">
+                        <span class="metric-label">Meals shared</span>
+                        <strong class="metric-value" data-target="{{ stats[0].value if stats else 0 }}">{{ stats[0].value if stats else 0 }}</strong>
                     </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Completed pickups</span>
-                        <strong>{{ stats[2].value if stats and stats|length > 2 else 0 }}</strong>
+                    <div class="hero-metric">
+                        <span class="metric-label">Completed</span>
+                        <strong class="metric-value" data-target="{{ stats[2].value if stats and stats|length > 2 else 0 }}">{{ stats[2].value if stats and stats|length > 2 else 0 }}</strong>
                     </div>
-                    <div class="summary-item">
-                        <span class="summary-label">People helped</span>
-                        <strong>{{ stats[3].value if stats and stats|length > 3 else 0 }}</strong>
+                    <div class="hero-metric">
+                        <span class="metric-label">People helped</span>
+                        <strong class="metric-value" data-target="{{ stats[3].value if stats and stats|length > 3 else 0 }}">{{ stats[3].value if stats and stats|length > 3 else 0 }}</strong>
                     </div>
                 </div>
             </section>
@@ -189,7 +207,7 @@
                         <span class="stat-trend">{{ stat.delta }}</span>
                     </div>
                     <p class="stat-label">{{ stat.title }}</p>
-                    <h3 class="stat-value" data-target="{{ stat.value }}">0</h3>
+                    <h3 class="stat-value" data-target="{{ stat.value }}">{{ stat.value }}</h3>
                     <div class="sparkline" aria-hidden="true">
                         {% for value in stat.spark %}
                         <span class="sparkbar" data-height="{{ value }}"></span>
@@ -203,22 +221,22 @@
                 <a class="action-card" href="{{ url_for('donor.add_donation') }}">
                     <span class="action-icon"><i data-lucide="plus-circle"></i></span>
                     <div>
-                        <h3>Add Donation</h3>
-                        <p>Share a new food inventory and open a pickup request.</p>
+                        <h3>New Donation</h3>
+                        <p>Post a fresh donation request in seconds.</p>
                     </div>
                 </a>
                 <a class="action-card" href="{{ url_for('donor.my_donations') }}">
-                    <span class="action-icon"><i data-lucide="scan-search"></i></span>
+                    <span class="action-icon"><i data-lucide="packages"></i></span>
                     <div>
-                        <h3>Track Donation</h3>
-                        <p>Follow each contribution from posting to pickup.</p>
+                        <h3>My Donations</h3>
+                        <p>Track every contribution from posting to pickup.</p>
                     </div>
                 </a>
                 <a class="action-card" href="{{ url_for('donor.donation_history') }}">
                     <span class="action-icon"><i data-lucide="history"></i></span>
                     <div>
-                        <h3>Donation History</h3>
-                        <p>Review completed drops and keep your impact story ready.</p>
+                        <h3>History</h3>
+                        <p>Review how your impact has grown over time.</p>
                     </div>
                 </a>
             </section>
@@ -228,110 +246,142 @@
                     <div class="panel-head">
                         <div>
                             <p class="panel-kicker">Active donations</p>
-                            <h2>Recent donations</h2>
+                            <h2>Live impact board</h2>
                         </div>
                         <a href="{{ url_for('donor.my_donations') }}" class="text-link">View all</a>
                     </div>
 
                     {% if donations %}
-                    <div class="table-shell">
-                        <table class="donation-table">
-                            <thead>
-                                <tr>
-                                    <th>Food</th>
-                                    <th>Quantity</th>
-                                    <th>Pickup location</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for donation in donations[:5] %}
-                                <tr>
-                                    <td>
-                                        <div class="table-primary">{{ donation.food_name }}</div>
-                                        <div class="table-secondary">{{ donation.food_category }}</div>
-                                    </td>
-                                    <td>{{ donation.quantity }}</td>
-                                    <td>{{ donation.pickup_address }}</td>
-                                    <td>{{ donation.pickup_time.strftime('%b %d, %Y') if donation.pickup_time else 'TBD' }}</td>
-                                    <td><span class="badge badge-{{ donation.status|lower|replace(' ', '-') }}">{{ donation.status }}</span></td>
-                                    <td><a class="table-action" href="{{ url_for('donor.donation_details', donation_id=donation.id) }}">View</a></td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="donation-mobile-list">
+                    <div class="donation-grid">
                         {% for donation in donations[:5] %}
                         <article class="donation-card">
-                            <div class="donation-card-head">
-                                <div>
-                                    <h3>{{ donation.food_name }}</h3>
-                                    <p>{{ donation.quantity }} • {{ donation.food_category }}</p>
+                            <div class="donation-card-media">
+                                {% if donation.image %}
+                                <img src="{{ url_for('static', filename='uploads/' ~ donation.image) }}" alt="{{ donation.food_name }} image">
+                                {% else %}
+                                <div class="donation-card-placeholder">
+                                    <i data-lucide="heart-handshake"></i>
                                 </div>
-                                <span class="badge badge-{{ donation.status|lower|replace(' ', '-') }}">{{ donation.status }}</span>
+                                {% endif %}
                             </div>
-                            <div class="donation-card-meta">
-                                <span><i data-lucide="map-pin"></i> {{ donation.pickup_address }}</span>
-                                <span><i data-lucide="clock-3"></i> {{ donation.pickup_time.strftime('%b %d, %Y') if donation.pickup_time else 'TBD' }}</span>
+                            <div class="donation-card-body">
+                                <div class="donation-card-top">
+                                    <div>
+                                        <h3>{{ donation.food_name }}</h3>
+                                        <p>{{ donation.quantity }} • {{ donation.food_category or donation.category }}</p>
+                                    </div>
+                                    <span class="badge-pill badge-{{ donation.status|lower|replace(' ', '-') }}">{{ donation.status }}</span>
+                                </div>
+
+                                <div class="donation-meta">
+                                    <span><i data-lucide="map-pin"></i> {{ donation.pickup_address }}</span>
+                                    <span><i data-lucide="clock-3"></i> {{ donation.pickup_time.strftime('%b %d, %Y') if donation.pickup_time else 'TBD' }}</span>
+                                </div>
+
+                                <div class="progress-shell" aria-label="Donation progress">
+                                    {% set progress_width = [70, 85, 95][loop.index0 % 3] %}
+                                    <div class="progress-track">
+                                        <div class="progress-fill" data-progress="{{ progress_width }}"></div>
+                                    </div>
+                                    <span class="progress-text">{{ progress_width }}% ready</span>
+                                </div>
+
+                                <div class="donation-actions">
+                                    <a class="inline-action" href="{{ url_for('donor.donation_details', donation_id=donation.id) }}">View</a>
+                                    <a class="inline-action muted" href="{{ url_for('donor.my_donations') }}">Track</a>
+                                </div>
                             </div>
-                            <a class="table-action" href="{{ url_for('donor.donation_details', donation_id=donation.id) }}">View details</a>
                         </article>
                         {% endfor %}
                     </div>
                     {% else %}
                     <div class="empty-state">
                         <div class="empty-icon"><i data-lucide="leaf"></i></div>
-                        <h3>No donations yet</h3>
-                        <p>Start your first donation and help reduce food waste.</p>
-                        <a href="{{ url_for('donor.add_donation') }}" class="primary-btn">Add Food Donation</a>
+                        <h3>No active donations yet</h3>
+                        <p>Create your first donation and start your impact story.</p>
+                        <a href="{{ url_for('donor.add_donation') }}" class="primary-btn">Create your first donation</a>
                     </div>
                     {% endif %}
                 </article>
 
-                <div class="stacked-panel">
-                    <article class="panel-card" id="analytics">
-                        <div class="panel-head">
+                <aside class="side-stack">
+                    <article class="panel-card profile-panel">
+                        <div class="panel-head compact">
                             <div>
-                                <p class="panel-kicker">Impact</p>
-                                <h2>Donation flow</h2>
+                                <p class="panel-kicker">Profile</p>
+                                <h2>Summary</h2>
                             </div>
-                            <span class="pill-badge">{{ completion_rate }}% complete</span>
                         </div>
-                        <div class="chart-shell">
-                            <canvas id="donationChart" aria-label="Monthly donation chart"></canvas>
+                        <div class="profile-summary">
+                            <div class="profile-avatar-large">{{ (current_user.full_name or current_user.name or 'D')[0].upper() }}</div>
+                            <div>
+                                <h3>{{ current_user.full_name or current_user.name or 'Donor' }}</h3>
+                                <p>{{ current_user.email }}</p>
+                                <span>Member since {{ current_user.created_at.strftime('%b %Y') if current_user.created_at else 'recently' }}</span>
+                            </div>
                         </div>
+                        <a href="{{ url_for('auth.profile') }}" class="secondary-btn full-width">Edit profile</a>
                     </article>
 
-                    <article class="panel-card">
-                        <div class="panel-head">
+                    <article class="panel-card notif-panel">
+                        <div class="panel-head compact">
                             <div>
-                                <p class="panel-kicker">Food mix</p>
-                                <h2>Categories</h2>
+                                <p class="panel-kicker">Notifications</p>
+                                <h2>Updates</h2>
                             </div>
+                            <span class="pill-badge">{{ activity_items|length }} updates</span>
                         </div>
-                        <div class="impact-list">
-                            {% for name, count in categories.items() %}
-                            <div class="impact-item">
-                                <span>{{ name }}</span>
-                                <strong>{{ count }}</strong>
+                        {% if activity_items %}
+                        <div class="timeline-list compact">
+                            {% for item in activity_items[:4] %}
+                            <div class="timeline-item">
+                                <span class="timeline-dot"></span>
+                                <div>
+                                    <p>{{ item.title }}</p>
+                                    <span>{{ item.detail }}</span>
+                                </div>
+                                <em>{{ item.time }}</em>
                             </div>
                             {% endfor %}
                         </div>
+                        {% else %}
+                        <div class="empty-inline">
+                            <p>No updates yet.</p>
+                        </div>
+                        {% endif %}
                     </article>
 
-                    <article class="panel-card">
-                        <div class="panel-head">
+                    <article class="panel-card analytics-panel" id="analytics">
+                        <div class="panel-head compact">
+                            <div>
+                                <p class="panel-kicker">Analytics</p>
+                                <h2>Impact overview</h2>
+                            </div>
+                            <span class="pill-badge">{{ completion_rate }}% complete</span>
+                        </div>
+                        <div class="chart-stack">
+                            <div class="chart-card">
+                                <canvas id="monthlyChart" aria-label="Monthly donations chart"></canvas>
+                                <script type="application/json" id="monthlyChartData">{{ monthly_chart_labels|tojson }}</script>
+                                <script type="application/json" id="monthlyChartValues">{{ monthly_chart_values|tojson }}</script>
+                            </div>
+                            <div class="chart-card">
+                                <canvas id="categoryChart" aria-label="Donation categories chart"></canvas>
+                                <script type="application/json" id="categoryChartData">{{ category_chart_labels|tojson }}</script>
+                                <script type="application/json" id="categoryChartValues">{{ category_chart_values|tojson }}</script>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="panel-card timeline-panel">
+                        <div class="panel-head compact">
                             <div>
                                 <p class="panel-kicker">Recent activity</p>
                                 <h2>Timeline</h2>
                             </div>
                         </div>
                         <div class="timeline-list">
-                            {% for item in activity_items %}
+                            {% for item in activity_items[:5] %}
                             <div class="timeline-item">
                                 <span class="timeline-dot"></span>
                                 <div>
@@ -343,7 +393,7 @@
                             {% endfor %}
                         </div>
                     </article>
-                </div>
+                </aside>
             </section>
         </main>
     </div>

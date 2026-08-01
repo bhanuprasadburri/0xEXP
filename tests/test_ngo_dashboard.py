@@ -5,7 +5,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app import app, db
-from models import User, Donation
+from models import User, Donation, Notification
 
 
 def test_ngo_dashboard_renders_for_ngo_user():
@@ -94,3 +94,71 @@ def test_completed_donations_are_visible_on_ngo_dashboard():
         body = response.get_data(as_text=True)
         assert "Completed Donations" in body
         assert "Completed Donation" in body
+
+
+def test_ngo_dashboard_script_targets_action_form_selector():
+    script_path = os.path.join(os.path.dirname(__file__), "..", "static", "js", "dashboard_ngo.js")
+    with open(script_path, encoding="utf-8") as handle:
+        script = handle.read()
+
+    assert ".action-form" in script
+
+
+def test_accept_donation_rolls_back_when_notification_write_fails(monkeypatch):
+    app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+
+    with app.test_client() as client:
+        with app.app_context():
+            donor = User.query.filter_by(email="db-consistency-donor@example.com").first()
+            if not donor:
+                donor = User(name="DB Consistency Donor", email="db-consistency-donor@example.com", phone="1112223334", role="donor", address="Test")
+                donor.set_password("secret")
+                db.session.add(donor)
+                db.session.commit()
+
+            ngo = User.query.filter_by(email="db-consistency-ngo@example.com").first()
+            if not ngo:
+                ngo = User(name="DB Consistency NGO", email="db-consistency-ngo@example.com", phone="1112223335", role="ngo", address="Test")
+                ngo.set_password("secret")
+                db.session.add(ngo)
+                db.session.commit()
+
+            donation = Donation.query.filter_by(food_name="Atomic Donation").first()
+            if not donation:
+                donation = Donation(
+                    food_name="Atomic Donation",
+                    food_category="Cooked",
+                    food_type="Vegetarian",
+                    quantity="2 boxes",
+                    servings=4,
+                    pickup_address="123 Test Street",
+                    pickup_time=datetime(2025, 1, 1, 0, 0, 0),
+                    expiry_time=datetime(2025, 1, 2, 0, 0, 0),
+                    donor_id=donor.id,
+                    status="Available",
+                )
+                db.session.add(donation)
+                db.session.commit()
+            else:
+                donation.status = "Available"
+                donation.ngo_id = None
+                db.session.commit()
+
+            Notification.query.filter_by(user_id=donor.id).delete()
+            db.session.commit()
+
+            def flaky_commit():
+                raise RuntimeError("notification commit failed")
+
+            monkeypatch.setattr(db.session, "commit", flaky_commit)
+
+            with client.session_transaction() as session:
+                session["_user_id"] = str(ngo.id)
+                session["_fresh"] = True
+
+            response = client.post(f"/ngo/accept-donation/{donation.id}", follow_redirects=False)
+
+            assert response.status_code == 302
+            assert donation.status == "Available"
+            assert donation.ngo_id is None
+            assert Notification.query.filter_by(user_id=donor.id).count() == 0

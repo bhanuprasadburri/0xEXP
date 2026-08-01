@@ -66,17 +66,28 @@ def accept_donation(donation_id):
     if current_user.role != "ngo":
         flash("Access denied.", "danger")
         return redirect(url_for("public.home"))
-    donation = Donation.query.get_or_404(donation_id)
+    donation = db.session.get(Donation, donation_id)
+    if donation is None:
+        flash("This donation could not be found.", "warning")
+        return redirect(url_for("ngo.dashboard"))
     if donation.status != "Available":
         flash("This donation is no longer available.", "warning")
         return redirect(url_for("ngo.dashboard"))
     donation.status = "Accepted"
     donation.ngo_id = current_user.id
     db.session.add(donation)
-    db.session.commit()
+
     notification = Notification(message=f"Your donation '{donation.food_name}' has been accepted by {current_user.name}.", user_id=donation.donor_id, status="unread")
     db.session.add(notification)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        db.session.expire(donation)
+        flash("We could not accept this donation right now. Please try again.", "danger")
+        return redirect(url_for("ngo.dashboard"))
+
     flash("Donation accepted successfully.", "success")
     return redirect(url_for("ngo.dashboard"))
 
@@ -97,7 +108,10 @@ def pickup_status(donation_id):
     if current_user.role != "ngo":
         flash("Access denied.", "danger")
         return redirect(url_for("public.home"))
-    donation = Donation.query.get_or_404(donation_id)
+    donation = db.session.get(Donation, donation_id)
+    if donation is None:
+        flash("This donation could not be found.", "warning")
+        return redirect(url_for("ngo.accepted_donations"))
     if donation.status == "Accepted":
         donation.status = "Collected"
     elif donation.status == "Collected":

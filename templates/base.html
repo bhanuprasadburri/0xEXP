@@ -22,9 +22,21 @@
             --color-text-light: #64748b;
             --color-card: #ffffff;
             --color-card-dark: #1e293b;
+            --navbar-height: 76px;
+        }
+        @media (max-width: 991px) {
+            :root {
+                --navbar-height: 72px;
+            }
+        }
+        @media (max-width: 575px) {
+            :root {
+                --navbar-height: 68px;
+            }
         }
         html {
             font-family: 'Inter', sans-serif;
+            scroll-padding-top: calc(var(--navbar-height) + 1rem);
         }
         .dark {
             --color-bg: var(--color-bg-dark);

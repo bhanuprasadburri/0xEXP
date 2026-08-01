@@ -8,6 +8,8 @@ from wtforms.validators import DataRequired, Length, NumberRange
 from models import db, Donation
 from werkzeug.utils import secure_filename
 from pathlib import Path
+from collections import Counter
+from datetime import datetime, timedelta, timezone
 import os
 
 
@@ -50,12 +52,35 @@ def dashboard():
         category_counts[donation.food_category] = category_counts.get(donation.food_category, 0) + 1
 
     stats = [
-        {"title": "Meals Donated", "value": meals_saved, "delta": "+8%", "icon": "utensils", "spark": [38, 52, 58, 66, 72, 78]},
-        {"title": "Active Donations", "value": pending_count, "delta": "+3%", "icon": "package", "spark": [22, 34, 40, 48, 56, 62]},
-        {"title": "Completed Donations", "value": completed_count, "delta": "+5%", "icon": "check-circle-2", "spark": [28, 45, 54, 60, 72, 80]},
-        {"title": "People Impacted", "value": people_impacted, "delta": "+12%", "icon": "users", "spark": [30, 42, 46, 58, 64, 70]},
-        {"title": "Nearby NGOs", "value": nearby_ngos, "delta": "+2%", "icon": "map-pin", "spark": [18, 24, 30, 34, 42, 50]},
+        {"title": "Meals Donated", "value": meals_saved, "delta": "+8%", "icon": "utensils", "spark": [meals_saved] * 6},
+        {"title": "Active Donations", "value": pending_count, "delta": "+3%", "icon": "package", "spark": [pending_count] * 6},
+        {"title": "Completed Donations", "value": completed_count, "delta": "+5%", "icon": "check-circle-2", "spark": [completed_count] * 6},
+        {"title": "People Impacted", "value": people_impacted, "delta": "+12%", "icon": "users", "spark": [people_impacted] * 6},
+        {"title": "Nearby NGOs", "value": nearby_ngos, "delta": "+2%", "icon": "map-pin", "spark": [nearby_ngos] * 6},
     ]
+
+    now = datetime.now(timezone.utc)
+    monthly_labels = []
+    monthly_values = []
+    month_buckets = Counter()
+    for donation in donations:
+        if donation.created_at:
+            bucket = donation.created_at.astimezone(timezone.utc).strftime("%b %Y")
+            month_buckets[bucket] += 1
+
+    for i in range(5, -1, -1):
+        month = (now - timedelta(days=i * 30)).strftime("%b %Y")
+        monthly_labels.append(month)
+        monthly_values.append(month_buckets.get(month, 0))
+
+    category_labels = []
+    category_values = []
+    category_counts = Counter(
+        (donation.food_category or donation.category or "Other") for donation in donations
+    )
+    for category, count in category_counts.most_common():
+        category_labels.append(category)
+        category_values.append(count)
 
     activity_items = []
     for donation in donations[:4]:
@@ -83,6 +108,10 @@ def dashboard():
         categories=category_counts,
         activity_items=activity_items,
         completion_rate=completion_rate,
+        monthly_chart_labels=monthly_labels,
+        monthly_chart_values=monthly_values,
+        category_chart_labels=category_labels,
+        category_chart_values=category_values,
     )
 
 
@@ -99,7 +128,11 @@ def add_donation():
             filename = secure_filename(form.image.data.filename)
             upload_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
             os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-            form.image.data.save(upload_path)
+            try:
+                form.image.data.save(upload_path)
+            except Exception:
+                flash("We could not upload your image. Please try again with a different file.", "danger")
+                return render_template("donor/add_donation.html", form=form)
             upload_path = filename
         donation = Donation(
             food_name=form.food_name.data,
@@ -135,7 +168,9 @@ def my_donations():
 @donor_bp.route("/donation/<int:donation_id>")
 @login_required
 def donation_details(donation_id):
-    donation = Donation.query.get_or_404(donation_id)
+    donation = db.session.get(Donation, donation_id)
+    if donation is None:
+        return redirect(url_for("donor.dashboard"))
     return render_template("donor/donation_details.html", donation=donation)
 
 

@@ -1,5 +1,8 @@
+import io
 import os
 import sys
+
+from werkzeug.datastructures import FileStorage
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -56,6 +59,7 @@ def test_registration_creates_donor_account():
     )
 
     assert response.status_code == 302
+    assert response.headers["Location"].endswith("/login/donor")
 
     with app.app_context():
         user = User.query.filter_by(email="newdonor@gmail.com").first()
@@ -86,11 +90,57 @@ def test_donor_registration_route_accepts_post():
     )
 
     assert response.status_code == 302
+    assert response.headers["Location"].endswith("/login/donor")
 
     with app.app_context():
         user = User.query.filter_by(email="route_donor@gmail.com").first()
         assert user is not None
         assert user.role == "donor"
+
+
+def test_admin_dashboard_shows_saved_users_and_contact_messages():
+    app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+
+    with app.test_client() as client:
+        with app.app_context():
+            admin = User.query.filter_by(email="admin-dashboard@example.com").first()
+            if not admin:
+                admin = User(full_name="Admin Dashboard", email="admin-dashboard@example.com", phone="9991112222", role="admin", address="Test")
+                admin.set_password("secret")
+                db.session.add(admin)
+                db.session.commit()
+
+            donor = User.query.filter_by(email="dashboard-user@example.com").first()
+            if not donor:
+                donor = User(full_name="Dashboard User", email="dashboard-user@example.com", phone="1112223333", role="donor", address="Test")
+                donor.set_password("secret")
+                db.session.add(donor)
+                db.session.commit()
+
+            message = ContactMessage.query.filter_by(email="dashboard-contact@example.com").first()
+            if not message:
+                message = ContactMessage(
+                    name="Dashboard Contact",
+                    email="dashboard-contact@example.com",
+                    subject="Visibility test",
+                    message="Saved from the contact form",
+                )
+                db.session.add(message)
+                db.session.commit()
+
+            admin_id = admin.id
+
+        with client.session_transaction() as session:
+            session["_user_id"] = str(admin_id)
+            session["_fresh"] = True
+
+        response = client.get("/admin/dashboard")
+        assert response.status_code == 200
+        body = response.get_data(as_text=True)
+        assert "Dashboard User" in body
+        assert "dashboard-contact@example.com" in body
+        assert "Visibility test" in body
+        assert "Contact Messages" in body
 
 
 def test_ngo_registration_auto_verifies_and_redirects_to_dashboard():
@@ -116,7 +166,7 @@ def test_ngo_registration_auto_verifies_and_redirects_to_dashboard():
     )
 
     assert response.status_code == 302
-    assert response.headers["Location"].endswith("/ngo/dashboard")
+    assert response.headers["Location"].endswith("/login/ngo")
 
     with app.app_context():
         user = User.query.filter_by(email="auto_ngo@gmail.com").first()
@@ -194,6 +244,30 @@ def test_donor_login_allows_valid_credentials_without_csrf_token():
     assert response.headers["Location"].endswith("/donor/dashboard")
 
 
+def test_donor_login_sets_remember_cookie_when_requested():
+    app.config.update(TESTING=True, WTF_CSRF_ENABLED=False, SECRET_KEY="test-secret")
+    client = app.test_client()
+
+    with app.app_context():
+        email = "remember_me@gmail.com"
+        User.query.filter_by(email=email).delete()
+        db.session.commit()
+        user = User(full_name="Remember Me", email=email, phone="1112223333", role="donor", address="Test")
+        user.set_password("Secret123")
+        db.session.add(user)
+        db.session.commit()
+
+    response = client.post(
+        "/login/donor",
+        data={"email": email, "password": "Secret123", "remember": "y"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/donor/dashboard")
+    assert "remember" in response.headers.get("Set-Cookie", "")
+
+
 def test_donor_and_ngo_login_accept_non_gmail_email_addresses():
     app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
     client = app.test_client()
@@ -242,6 +316,52 @@ def test_password_reset_request_redirects_to_login():
 
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/login")
+
+
+def test_add_donation_handles_image_save_failure(monkeypatch):
+    app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+    client = app.test_client()
+
+    with app.app_context():
+        user = User.query.filter_by(email="image_fail_donor@gmail.com").first()
+        if not user:
+            user = User(full_name="Image Fail Donor", email="image_fail_donor@gmail.com", phone="1112223333", role="donor", address="Test")
+            user.set_password("Secret123")
+            db.session.add(user)
+            db.session.commit()
+        user_id = user.id
+
+    with client.session_transaction() as session:
+        session["_user_id"] = str(user_id)
+        session["_fresh"] = True
+
+    def raise_on_save(self, destination):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(FileStorage, "save", raise_on_save)
+
+    response = client.post(
+        "/donor/add-donation",
+        data={
+            "food_name": "Test Donation",
+            "food_category": "Cooked",
+            "food_type": "Vegetarian",
+            "quantity": "2 boxes",
+            "servings": "4",
+            "pickup_address": "123 Test Street",
+            "pickup_location": "Downtown",
+            "pickup_time": "2025-01-01T12:00",
+            "expiry_time": "2025-01-02T12:00",
+            "additional_notes": "Needs pickup soon",
+            "image": (io.BytesIO(b"test-image"), "test.jpg"),
+        },
+        content_type="multipart/form-data",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "We could not upload your image" in html
 
 
 def test_password_reset_token_updates_password():

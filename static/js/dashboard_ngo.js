@@ -19,13 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     toggleButton.addEventListener('click', () => {
-      dashboardShell.classList.toggle('is-collapsed');
-      const collapsed = dashboardShell.classList.contains('is-collapsed');
+      const collapsed = dashboardShell.classList.toggle('is-collapsed');
       window.localStorage.setItem('ngoSidebarCollapsed', collapsed ? 'true' : 'false');
     });
   }
 
-  document.querySelectorAll('.accept-form').forEach((form) => {
+  document.querySelectorAll('.action-form').forEach((form) => {
     form.addEventListener('submit', (event) => {
       if (!window.confirm('Accept this donation and move it into your active queue?')) {
         event.preventDefault();

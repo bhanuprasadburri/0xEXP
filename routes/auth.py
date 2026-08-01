@@ -35,35 +35,42 @@ def _authenticate_user(email, password, role=None):
     return None
 
 
-def _register_user(role, form_data):
-    name = form_data.get("name", "").strip()
+def _validate_password(password, confirm_password=None):
+    if not password:
+        return "Password is required."
+    if confirm_password is not None and password != confirm_password:
+        return "Passwords do not match."
+    if not re.search(r"[A-Z]", password) or not re.search(r"[0-9]", password) or len(password) < 8:
+        return "Password must be at least 8 characters and include a number and uppercase letter."
+    return None
+
+
+def _create_user_account(role, form_data, *, redirect_endpoint, error_endpoint):
+    name = (form_data.get("name") or "").strip()
     email = _normalize_email(form_data.get("email", ""))
-    phone = form_data.get("phone", "").strip()
-    address = form_data.get("address", "").strip()
+    phone = (form_data.get("phone") or "").strip()
+    address = (form_data.get("address") or "").strip()
     password = form_data.get("password", "")
     confirm_password = form_data.get("confirm_password", "")
-    organization_name = form_data.get("organization_name", "").strip()
-    registration_number = form_data.get("registration_number", "").strip()
+    organization_name = (form_data.get("organization_name") or "").strip()
+    registration_number = (form_data.get("registration_number") or "").strip()
 
     if not all([name, email, phone, address, password]):
         flash("Please fill in all required fields.", "danger")
-        return redirect(url_for("auth.register"))
+        return redirect(url_for(error_endpoint))
 
     if not is_gmail_address(email):
         flash(get_gmail_validation_message(), "danger")
-        return redirect(url_for("auth.register"))
+        return redirect(url_for(error_endpoint))
 
-    if password != confirm_password:
-        flash("Passwords do not match.", "danger")
-        return redirect(url_for("auth.register"))
-
-    if not re.search(r"[A-Z]", password) or not re.search(r"[0-9]", password) or len(password) < 8:
-        flash("Password must be at least 8 characters and include a number and uppercase letter.", "danger")
-        return redirect(url_for("auth.register"))
+    password_error = _validate_password(password, confirm_password)
+    if password_error:
+        flash(password_error, "danger")
+        return redirect(url_for(error_endpoint))
 
     if _find_user_by_email(email):
         flash("An account with this email already exists.", "danger")
-        return redirect(url_for("auth.register"))
+        return redirect(url_for(error_endpoint))
 
     user = User(
         full_name=name,
@@ -74,40 +81,55 @@ def _register_user(role, form_data):
         organization_name=organization_name or name,
     )
     user.set_password(password)
-    db.session.add(user)
-    db.session.flush()
+
+    try:
+        db.session.add(user)
+        db.session.flush()
+
+        if role == "ngo":
+            existing_ngo = NGO.query.filter_by(user_id=user.id).first()
+            if existing_ngo:
+                db.session.delete(existing_ngo)
+
+            base_registration_number = registration_number or "REG-DEFAULT"
+            unique_registration_number = base_registration_number
+            suffix = 1
+            while NGO.query.filter_by(registration_number=unique_registration_number).first():
+                unique_registration_number = f"{base_registration_number}-{suffix}"
+                suffix += 1
+
+            ngo = NGO(
+                organization_name=organization_name or name,
+                registration_number=unique_registration_number,
+                address=address,
+                status="verified",
+                verification_status="verified",
+                is_verified=True,
+                user_id=user.id,
+            )
+            db.session.add(ngo)
+
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        flash("We could not create your account right now. Please try again.", "danger")
+        return redirect(url_for(error_endpoint))
 
     if role == "ngo":
-        existing_ngo = NGO.query.filter_by(user_id=user.id).first()
-        if existing_ngo:
-            db.session.delete(existing_ngo)
+        flash("Registration successful! Please log in to continue.", "success")
+        return redirect(url_for("auth.ngo_login"))
 
-        base_registration_number = registration_number or "REG-DEFAULT"
-        unique_registration_number = base_registration_number
-        suffix = 1
-        while NGO.query.filter_by(registration_number=unique_registration_number).first():
-            unique_registration_number = f"{base_registration_number}-{suffix}"
-            suffix += 1
+    flash("Registration successful! Please log in to continue.", "success")
+    return redirect(url_for("auth.donor_login"))
 
-        ngo = NGO(
-            organization_name=organization_name or name,
-            registration_number=unique_registration_number,
-            address=address,
-            status="verified",
-            verification_status="verified",
-            is_verified=True,
-            user_id=user.id,
-        )
-        db.session.add(ngo)
-        db.session.commit()
-        login_user(user)
-        flash("NGO registration completed. Your account is pending admin approval.", "success")
-        return redirect(url_for("ngo.dashboard"))
 
-    db.session.commit()
-    login_user(user)
-    flash("Donor account created successfully.", "success")
-    return redirect(url_for("donor.dashboard"))
+def _register_user(role, form_data):
+    return _create_user_account(
+        role,
+        form_data,
+        redirect_endpoint="auth.donor_login" if role == "donor" else "auth.ngo_login",
+        error_endpoint="auth.register",
+    )
 
 
 class DonorRegistrationForm(FlaskForm):
@@ -167,44 +189,63 @@ def register():
 def login():
 
     if request.method == "POST":
-        role = request.form.get("role")
-        email = request.form.get("email", "").strip().lower()
+        role = (request.form.get("role") or "").strip().lower()
+        email = _normalize_email(request.form.get("email", ""))
         password = request.form.get("password", "")
 
         if not is_gmail_address(email):
             flash(get_gmail_validation_message(), "danger")
             return redirect(url_for("auth.login"))
 
+        remember = (request.form.get("remember") or "").lower() in {"1", "true", "yes", "y", "on"}
+
         if role == "donor":
             user = _authenticate_user(email, password, role="donor")
             if user:
-                login_user(user, remember=True)
+                login_user(user, remember=remember)
                 flash("Welcome back!", "success")
                 return redirect(url_for("donor.dashboard"))
             flash("Invalid donor credentials.", "danger")
             return redirect(url_for("auth.login"))
 
-        if role == "ngo" or (role is None and email and password):
-            registration_number = request.form.get("registration_number", "").strip()
-            if registration_number:
-                ngo = NGO.query.filter_by(registration_number=registration_number).first()
-            else:
-                ngo = None
-            if ngo:
-                user = User.query.get(ngo.user_id)
-                if user and _normalize_email(user.email) == email and user.check_password(password):
-                    login_user(user, remember=True)
-                    flash("Welcome back!", "success")
-                    return redirect(url_for("ngo.dashboard"))
-            logger_user = _authenticate_user(email, password, role="ngo")
-            if logger_user:
-                login_user(logger_user, remember=True)
+        if role == "ngo":
+            user = _authenticate_user(email, password, role="ngo")
+            if user:
+                login_user(user, remember=remember)
                 flash("Welcome back!", "success")
                 return redirect(url_for("ngo.dashboard"))
             flash("Invalid NGO credentials.", "danger")
             return redirect(url_for("auth.login"))
 
-    return render_template("auth/login.html")
+        if role == "admin":
+            user = _authenticate_user(email, password, role="admin")
+            if user:
+                login_user(user, remember=remember)
+                flash("Welcome back!", "success")
+                return redirect(url_for("admin.dashboard"))
+            flash("Invalid admin credentials.", "danger")
+            return redirect(url_for("auth.login"))
+
+        registration_number = request.form.get("registration_number", "").strip()
+        if registration_number:
+            ngo = NGO.query.filter_by(registration_number=registration_number).first()
+            if ngo:
+                user = db.session.get(User, ngo.user_id)
+                if user and _normalize_email(user.email) == email and user.check_password(password):
+                    login_user(user, remember=remember)
+                    flash("Welcome back!", "success")
+                    return redirect(url_for("ngo.dashboard"))
+
+        user = _authenticate_user(email, password)
+        if user:
+            login_user(user, remember=remember)
+            flash("Welcome back!", "success")
+            return redirect(url_for("ngo.dashboard") if user.role == "ngo" else url_for("donor.dashboard"))
+
+        flash("Invalid email or password.", "danger")
+        return redirect(url_for("auth.login"))
+
+    return render_template("auth/login_choice.html")
 
 
 @auth_bp.route("/profile", methods=["GET", "POST"])
@@ -240,7 +281,19 @@ def profile():
         flash("Profile updated successfully.", "success")
         return redirect(url_for("auth.profile"))
 
-    return render_template("auth/profile.html")
+    completed_count = 0
+    donation_count = 0
+    completion_rate = 0
+    if current_user.role == "donor":
+        donation_count = current_user.donations.count() if hasattr(current_user.donations, 'count') else len(current_user.donations)
+        completed_count = sum(1 for donation in current_user.donations if donation.status == "Completed")
+        completion_rate = round((completed_count / donation_count * 100), 1) if donation_count else 0
+
+    return render_template(
+        "auth/profile.html",
+        donations=[d for d in current_user.donations] if current_user.role == "donor" else [],
+        completion_rate=completion_rate,
+    )
 
 
 @auth_bp.route("/notifications")
@@ -323,43 +376,21 @@ def reset_password(token):
 def donor_register():
 
     if request.method == "POST":
-
-        name = request.form.get("name")
-        email = _normalize_email(request.form.get("email"))
-        phone = request.form.get("phone")
-        donor_type = request.form.get("organization_name")
-        address = request.form.get("address")
-        password = request.form.get("password")
-        confirm_password = request.form.get("confirm_password")
-
-        if not is_gmail_address(email):
-            flash(get_gmail_validation_message(), "danger")
-            return redirect(url_for("auth.donor_register"))
-
-        if password != confirm_password:
-            flash("Passwords do not match!", "danger")
-            return redirect(url_for("auth.donor_register"))
-
-        if _find_user_by_email(email):
-            flash("Email already exists!", "danger")
-            return redirect(url_for("auth.donor_register"))
-
-        user = User(
-            name=name,
-            email=email,
-            phone=phone,
-            address=address,
-            role="donor"
+        form_data = {
+            "name": (request.form.get("name") or "").strip(),
+            "email": _normalize_email(request.form.get("email")),
+            "phone": (request.form.get("phone") or "").strip(),
+            "address": (request.form.get("address") or "").strip(),
+            "organization_name": (request.form.get("organization_name") or "").strip(),
+            "password": request.form.get("password") or "",
+            "confirm_password": request.form.get("confirm_password") or "",
+        }
+        return _create_user_account(
+            "donor",
+            form_data,
+            redirect_endpoint="auth.donor_login",
+            error_endpoint="auth.donor_register",
         )
-
-        user.set_password(password)
-
-        db.session.add(user)
-        db.session.commit()
-
-        flash("Donor account created successfully!", "success")
-
-        return redirect(url_for("auth.donor_login"))
 
     return render_template("auth/donor_register.html")
 
@@ -383,7 +414,9 @@ def donor_login():
                 flash("Please use the donor login page.", "danger")
                 return redirect(url_for("auth.donor_login"))
 
-            login_user(user)
+            remember = (request.form.get("remember") or "").lower() in {"1", "true", "yes", "y", "on"}
+            login_user(user, remember=remember)
+            flash("Welcome back!", "success")
             return redirect(url_for("donor.dashboard"))
 
         flash("Invalid email or password.", "danger")
@@ -396,14 +429,31 @@ def ngo_login():
     form = LoginForm(meta={"csrf": False})
 
     if form.is_submitted() and form.email.data and form.password.data:
-        user = _authenticate_user(form.email.data, form.password.data, role="ngo")
+        email = _normalize_email(form.email.data)
+        password = form.password.data
+        registration_number = (request.form.get("registration_number") or "").strip()
+        
+        user = None
+        
+        # Try to authenticate by registration_number + email + password
+        if registration_number:
+            ngo = NGO.query.filter_by(registration_number=registration_number).first()
+            if ngo:
+                ngo_user = db.session.get(User, ngo.user_id)
+                if ngo_user and _normalize_email(ngo_user.email) == email and ngo_user.check_password(password):
+                    user = ngo_user
+        
+        # Fall back to email + password authentication
+        if not user:
+            user = _authenticate_user(email, password, role="ngo")
 
         if user:
-            login_user(user)
+            remember = (request.form.get("remember") or "").lower() in {"1", "true", "yes", "y", "on"}
+            login_user(user, remember=remember)
             flash("Welcome back!", "success")
             return redirect(url_for("ngo.dashboard"))
 
-        flash("Invalid NGO email or password.", "danger")
+        flash("Invalid NGO credentials.", "danger")
 
     return render_template("auth/ngo_login.html", form=form)
 @auth_bp.route("/login-choice")

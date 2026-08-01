@@ -58,7 +58,7 @@ class NGO(db.Model):
     verification_status = db.Column(db.String(20), nullable=False, default="pending")
     status = db.Column(db.String(20), nullable=False, default="pending")
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
 
     user = db.relationship("User", back_populates="ngo_profile")
 

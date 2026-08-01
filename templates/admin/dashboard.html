@@ -2,7 +2,7 @@
 {% block content %}
 <div class="row g-4">
     <div class="col-lg-8">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <h3 class="fw-bold mb-3">Admin Dashboard</h3>
                 <h5>Registered NGOs</h5>
@@ -28,31 +28,48 @@
                     {% endfor %}
                 </ul>
                 <h5>All Donations</h5>
-                <ul class="list-group">
+                <ul class="list-group mb-3">
                     {% for donation in donations %}
                         <li class="list-group-item">{{ donation.food_name }} - {{ donation.status }} - {{ donation.donor.name }}</li>
                     {% else %}
                         <li class="list-group-item">No donations found.</li>
                     {% endfor %}
                 </ul>
+                <h5>Contact Messages</h5>
+                <ul class="list-group">
+                    {% for message in contact_messages %}
+                        <li class="list-group-item">
+                            <strong>{{ message.name }}</strong> ({{ message.email }})<br>
+                            <small>{{ message.subject }}</small><br>
+                            <span>{{ message.message }}</span>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item">No contact messages yet.</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
     <div class="col-lg-4">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <h5>Manage Users</h5>
                 <ul class="list-group">
                     {% for user in users %}
                         {% if user.role != 'admin' %}
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>{{ user.name }} ({{ user.role }})</span>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ user.name or user.full_name }}</strong><br>
+                                <small>{{ user.email }} • {{ user.role }}</small>
+                            </div>
                             <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
                         </li>
                         {% endif %}
+                    {% else %}
+                        <li class="list-group-item">No users found.</li>
                     {% endfor %}
                 </ul>
             </div>

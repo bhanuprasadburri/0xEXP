@@ -1,10 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from . import db
 
 
 class Donation(db.Model):
     __tablename__ = "donations"
+    __table_args__ = (
+        db.Index("ix_donations_donor_status", "donor_id", "status"),
+        db.Index("ix_donations_ngo_status", "ngo_id", "status"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     donor_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
@@ -24,7 +28,7 @@ class Donation(db.Model):
     additional_notes = db.Column(db.Text, nullable=True)
     image = db.Column(db.String(255), nullable=True)
     status = db.Column(db.String(20), nullable=False, default="Available")
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     donor = db.relationship("User", back_populates="donations", foreign_keys=[donor_id])
     ngo = db.relationship("User", back_populates="accepted_donations", foreign_keys=[ngo_id])
@@ -32,9 +36,9 @@ class Donation(db.Model):
 
     def __init__(self, **kwargs):
         if "food_category" in kwargs and "category" not in kwargs:
-            kwargs["category"] = kwargs.pop("food_category")
-        if "food_type" in kwargs and "food_type" not in kwargs:
-            kwargs["food_type"] = kwargs["food_type"]
+            kwargs["category"] = kwargs["food_category"]
+        if "category" in kwargs and "food_category" not in kwargs:
+            kwargs["food_category"] = kwargs["category"]
         if "description" not in kwargs and "additional_notes" in kwargs:
             kwargs["description"] = kwargs["additional_notes"]
         if "additional_notes" not in kwargs and "description" in kwargs:
@@ -47,6 +51,6 @@ class DonationHistory(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     donation_id = db.Column(db.Integer, db.ForeignKey("donations.id"), nullable=False)
-    completed_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    completed_date = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     donation = db.relationship("Donation", back_populates="history")

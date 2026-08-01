@@ -158,16 +158,19 @@
                     id="password"
                     name="password"
                     class="form-control"
-                    placeholder="Enter Password">
+                    placeholder="Enter Password"
+                    autocomplete="new-password">
 
-                <span
-                    class="input-group-text"
-                    onclick="togglePassword()"
+                <button
+                    type="button"
+                    class="input-group-text border-0 bg-transparent"
+                    onclick="togglePassword('password', 'toggleIcon')"
+                    aria-label="Toggle password visibility"
                     style="cursor:pointer;">
 
                     <i class="fas fa-eye" id="toggleIcon"></i>
 
-                </span>
+                </button>
 
             </div>
 
@@ -182,12 +185,26 @@
 
         <label class="form-label">Confirm Password</label>
 
-        <input
-            type="password"
-            id="confirm_password"
-            name="confirm_password"
-            class="form-control"
-            placeholder="Confirm Password">
+        <div class="input-group">
+            <input
+                type="password"
+                id="confirm_password"
+                name="confirm_password"
+                class="form-control"
+                placeholder="Confirm Password"
+                autocomplete="new-password">
+
+            <button
+                type="button"
+                class="input-group-text border-0 bg-transparent"
+                onclick="togglePassword('confirm_password', 'toggleConfirmIcon')"
+                aria-label="Toggle confirm password visibility"
+                style="cursor:pointer;">
+
+                <i class="fas fa-eye" id="toggleConfirmIcon"></i>
+
+            </button>
+        </div>
 
     </div>
 
@@ -250,46 +267,23 @@
 </div>
 <script>
 
-function togglePassword() {
+function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
 
-    let password = document.getElementById("password");
-    let icon = document.getElementById("toggleIcon");
-
-    if(password.type === "password"){
-
-        password.type = "text";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
-
-    }else{
-
-        password.type = "password";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
-
+    if (!input || !icon) {
+        return;
     }
 
-}
-
-function toggleConfirmPassword() {
-
-    let password = document.getElementById("confirm_password");
-    let icon = document.getElementById("toggleConfirmIcon");
-
-    if(password.type === "password"){
-
-        password.type = "text";
+    if (input.type === "password") {
+        input.type = "text";
         icon.classList.remove("fa-eye");
         icon.classList.add("fa-eye-slash");
-
-    }else{
-
-        password.type = "password";
+    } else {
+        input.type = "password";
         icon.classList.remove("fa-eye-slash");
         icon.classList.add("fa-eye");
-
     }
-
 }
 
 </script>

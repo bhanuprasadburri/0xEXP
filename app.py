@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
+from datetime import datetime, timezone
 
+import flask_login.login_manager as flask_login_manager_module
 from flask import Flask, redirect, url_for, flash
 from flask_login import LoginManager, current_user
 from flask_wtf.csrf import CSRFProtect
@@ -13,12 +15,27 @@ from sqlalchemy.exc import OperationalError
 from config import Config
 from models import db, User, NGO
 from routes.public import public_bp
+from utils.seed import seed_admin_user, seed_demo_users
 from routes.auth import auth_bp
 from routes.donor import donor_bp
 from routes.ngo import ngo_bp
 from routes.admin import admin_bp
 
 load_dotenv()
+
+
+def _patch_flask_login_datetime() -> None:
+    def _utcnow():
+        return datetime.now(timezone.utc)
+
+    flask_login_manager_module.datetime = type(
+        "CompatDateTime",
+        (datetime,),
+        {"utcnow": staticmethod(_utcnow)},
+    )
+
+
+_patch_flask_login_datetime()
 
 csrf = CSRFProtect()
 mail = Mail()
@@ -39,16 +56,61 @@ def unauthorized():
     return redirect(url_for("auth.login"))
 
 
+def _ensure_runtime_directories(app: Flask) -> None:
+    os.makedirs(app.config.get("INSTANCE_DIR", str(Path(__file__).resolve().parent / "instance")), exist_ok=True)
+    os.makedirs(app.config.get("UPLOAD_FOLDER", str(Path(__file__).resolve().parent / "static" / "uploads")), exist_ok=True)
+
+
+def _initialize_database(app: Flask) -> None:
+    with app.app_context():
+        try:
+            db.engine.connect()
+        except Exception as exc:
+            app.logger.error("MySQL connection failed: %s", exc)
+            raise
+
+        try:
+            migration_dir = Path(__file__).resolve().parent / "migrations"
+            if migration_dir.exists() and any(migration_dir.glob("versions/*.py")):
+                from flask_migrate import upgrade
+
+                upgrade(directory=str(migration_dir))
+            else:
+                db.create_all()
+
+            inspector = inspect(db.engine)
+            if "ngos" in inspector.get_table_names():
+                foreign_keys = inspector.get_foreign_keys("ngos")
+                has_cascade_fk = any(
+                    fk.get("referred_table") == "users"
+                    and fk.get("constrained_columns") == ["user_id"]
+                    and fk.get("options", {}).get("ondelete") == "CASCADE"
+                    for fk in foreign_keys
+                )
+                if not has_cascade_fk:
+                    try:
+                        with db.engine.begin() as connection:
+                            connection.execute(text("""
+                                ALTER TABLE ngos
+                                ADD CONSTRAINT ngos_ibfk_1
+                                FOREIGN KEY (user_id) REFERENCES users(id)
+                                ON DELETE CASCADE
+                            """))
+                    except Exception as exc:
+                        app.logger.warning("Could not add cascade foreign key to ngos: %s", exc)
+
+            seed_admin_user()
+            seed_demo_users()
+        except Exception as exc:
+            app.logger.warning("Database initialization failed; retrying table creation: %s", exc)
+            db.create_all()
+            seed_admin_user()
+            seed_demo_users()
+
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-
-    sqlite_uri = "sqlite:///" + str(Path(__file__).resolve().parent / "instance" / "0xexp.db")
-    fallback_enabled = os.getenv("USE_SQLITE_FALLBACK", "true").lower() == "true"
-    if fallback_enabled and app.config.get("SQLALCHEMY_DATABASE_URI", "").startswith("mysql"):
-        app.logger.warning("MySQL is not available or not configured; using local SQLite fallback.")
-        app.config["SQLALCHEMY_DATABASE_URI"] = sqlite_uri
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}
 
     db.init_app(app)
     csrf.init_app(app)
@@ -62,29 +124,21 @@ def create_app(config_class=Config):
     app.register_blueprint(ngo_bp)
     app.register_blueprint(admin_bp)
 
-    from routes.auth import donor_login, ngo_login
+    from routes.auth import donor_login, ngo_login, donor_register, ngo_register
 
     csrf.exempt(donor_login)
     csrf.exempt(ngo_login)
+    csrf.exempt(donor_register)
+    csrf.exempt(ngo_register)
 
     @app.context_processor
     def inject_user():
         return {"current_user": current_user}
 
-    with app.app_context():
-        try:
-            db.engine.connect()
-            db.create_all()
-        except Exception as exc:
-            if fallback_enabled:
-                app.logger.warning("Database connection unavailable, using local SQLite fallback: %s", exc)
-                app.config["SQLALCHEMY_DATABASE_URI"] = sqlite_uri
-                app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}
-                db.session.remove()
-                db.create_all()
-            else:
-                raise
+    _ensure_runtime_directories(app)
+    _initialize_database(app)
 
+    with app.app_context():
         inspector = inspect(db.engine)
         if "users" in inspector.get_table_names():
             user_columns = {column["name"] for column in inspector.get_columns("users")}

@@ -1,44 +1,230 @@
 {% extends 'base.html' %}
+{% block head_extra %}
+<style>
+    .profile-page {
+        max-width: 1060px;
+        margin: 2.5rem auto 3rem;
+        display: grid;
+        grid-template-columns: 1.18fr 0.82fr;
+        gap: 1.5rem;
+    }
+    .profile-card, .profile-actions {
+        border-radius: 28px;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        box-shadow: 0 28px 80px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(18px);
+    }
+    .profile-card {
+        padding: 2rem;
+    }
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        margin-bottom: 1.7rem;
+    }
+    .profile-avatar {
+        width: 88px;
+        height: 88px;
+        border-radius: 22px;
+        display: grid;
+        place-items: center;
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: #ffffff;
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        box-shadow: 0 16px 40px rgba(22, 163, 74, 0.18);
+    }
+    .profile-title p {
+        margin: 0 0 0.35rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #16a34a;
+        font-weight: 700;
+    }
+    .profile-title h1 {
+        margin: 0;
+        font-size: clamp(1.9rem, 2.4vw, 2.5rem);
+        font-weight: 800;
+        line-height: 1.05;
+    }
+    .profile-meta {
+        display: grid;
+        gap: 0.35rem;
+        color: #64748b;
+        margin-top: 1rem;
+    }
+    .profile-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.95rem;
+    }
+    .profile-meta i {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 10px;
+        background: rgba(22, 163, 74, 0.1);
+        color: #16a34a;
+    }
+    .profile-section {
+        margin-top: 1.75rem;
+    }
+    .profile-section h2 {
+        margin-bottom: 1rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+    .form-grid {
+        display: grid;
+        gap: 1rem;
+    }
+    .profile-field {
+        display: grid;
+        gap: 0.35rem;
+    }
+    .profile-field label {
+        font-weight: 600;
+        color: #334155;
+    }
+    .profile-field input {
+        border-radius: 16px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        padding: 0.95rem 1rem;
+        font-size: 0.95rem;
+        background: #ffffff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .profile-field input:focus {
+        border-color: #16a34a;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.08);
+    }
+    .profile-actions {
+        padding: 2rem;
+    }
+    .profile-actions h2 {
+        margin-bottom: 1rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+    .profile-actions p {
+        margin-bottom: 1.5rem;
+        color: #64748b;
+        line-height: 1.75;
+    }
+    .profile-actions .btn {
+        width: 100%;
+        padding: 0.95rem 1.1rem;
+        border-radius: 16px;
+        font-weight: 700;
+    }
+    .profile-footer {
+        margin-top: 1.6rem;
+        display: grid;
+        gap: 0.85rem;
+    }
+    .profile-footer .stat-card {
+        display: grid;
+        padding: 1rem 1.2rem;
+        border-radius: 18px;
+        background: #f8fafc;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+    }
+    .profile-footer .stat-card strong {
+        display: block;
+        margin-top: 0.45rem;
+        font-size: 1.05rem;
+        color: #0f172a;
+    }
+    @media (max-width: 992px) {
+        .profile-page { grid-template-columns: 1fr; }
+        .profile-actions { order: -1; }
+    }
+</style>
+{% endblock %}
 {% block content %}
-<div class="card shadow-sm">
-    <div class="card-body">
-        <h2 class="fw-bold mb-3">User Profile</h2>
-        <form method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-            <div class="mb-3">
-                <label class="form-label">Full Name</label>
-                <input type="text" name="full_name" class="form-control" value="{{ current_user.full_name or current_user.name }}" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Phone</label>
-                <input type="text" name="phone" class="form-control" value="{{ current_user.phone }}">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Address</label>
-                <input type="text" name="address" class="form-control" value="{{ current_user.address }}">
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">City</label>
-                    <input type="text" name="city" class="form-control" value="{{ current_user.city }}">
+<div class="profile-page">
+    <section class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">{{ (current_user.full_name or current_user.name or 'U')[0]|upper }}</div>
+            <div>
+                <div class="profile-title">
+                    <p>Donor profile</p>
+                    <h1>{{ current_user.full_name or current_user.name or 'Your Name' }}</h1>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">State</label>
-                    <input type="text" name="state" class="form-control" value="{{ current_user.state }}">
+                <div class="profile-meta">
+                    <span><i class="fas fa-envelope"></i>{{ current_user.email }}</span>
+                    <span><i class="fas fa-user-tag"></i>{{ current_user.role|capitalize }}</span>
+                    <span><i class="fas fa-calendar-check"></i>Member since {{ current_user.created_at.strftime('%b %Y') if current_user.created_at else 'recently' }}</span>
                 </div>
             </div>
-            {% if current_user.role == 'ngo' %}
-            <div class="mb-3">
-                <label class="form-label">Organization Name</label>
-                <input type="text" name="organization_name" class="form-control" value="{{ current_user.organization_name }}">
+        </div>
+
+        <div class="profile-section">
+            <h2>Personal details</h2>
+            <form method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div class="form-grid">
+                    <div class="profile-field">
+                        <label for="full_name">Full name</label>
+                        <input id="full_name" type="text" name="full_name" value="{{ current_user.full_name or current_user.name }}" required>
+                    </div>
+                    <div class="profile-field">
+                        <label for="email">Email address</label>
+                        <input id="email" type="email" value="{{ current_user.email }}" disabled>
+                    </div>
+                    <div class="profile-field">
+                        <label for="phone">Phone number</label>
+                        <input id="phone" type="text" name="phone" value="{{ current_user.phone }}">
+                    </div>
+                    <div class="profile-field">
+                        <label for="address">Address</label>
+                        <input id="address" type="text" name="address" value="{{ current_user.address }}">
+                    </div>
+                    <div class="profile-field">
+                        <label for="city">City</label>
+                        <input id="city" type="text" name="city" value="{{ current_user.city }}">
+                    </div>
+                    <div class="profile-field">
+                        <label for="state">State</label>
+                        <input id="state" type="text" name="state" value="{{ current_user.state }}">
+                    </div>
+                    {% if current_user.role == 'ngo' %}
+                    <div class="profile-field">
+                        <label for="organization_name">Organization name</label>
+                        <input id="organization_name" type="text" name="organization_name" value="{{ current_user.organization_name }}">
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Save profile</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <aside class="profile-actions">
+        <h2>Account overview</h2>
+        <p>Keep your profile information current so NGOs can contact you quickly and your donations remain accurate in the system.</p>
+        <button type="button" class="btn btn-outline-primary">Update password</button>
+        <button type="button" class="btn btn-outline-secondary">Connect social login</button>
+
+        <div class="profile-footer">
+            <div class="stat-card">
+                <span>Active donations</span>
+                <strong>{{ donations|length }}</strong>
             </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary">Save Profile</button>
-        </form>
-    </div>
+            <div class="stat-card">
+                <span>Donation history</span>
+                <strong>{{ completion_rate }}% completed</strong>
+            </div>
+        </div>
+    </aside>
 </div>
 {% endblock %}
