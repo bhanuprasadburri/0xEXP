@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="profile-page py-4">
+    <div class="profile-header mb-4 d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+        <div>
+            <p class="text-uppercase text-success fw-bold mb-2">Settings</p>
+            <h1 class="display-5 fw-bold">Live platform settings</h1>
+            <p class="text-muted">Manage the settings that directly impact your donor or NGO workflow.</p>
+        </div>
+        <div class="profile-actions d-flex flex-wrap gap-2 align-items-center">
+            <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Profile</a>
+            <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-success">Edit profile</a>
+        </div>
+    </div>
+
+    <div class="row gx-4 gy-4">
+        <div class="col-lg-8">
+            <div class="card profile-form-card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">Account & activity</h2>
+                            <p class="text-muted mb-0">These settings reflect the platform controls available for your account.</p>
+                        </div>
+                        <span class="badge rounded-pill bg-success py-2 px-3">Live updates enabled</span>
+                    </div>
+
+                    <div class="row gx-3 gy-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Account type</p>
+                                <h3 class="h5 mb-0">{{ current_user.role|capitalize }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Email</p>
+                                <h3 class="h5 mb-0">{{ current_user.email }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Profile status</p>
+                                <h3 class="h5 mb-0">Active</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Account created</p>
+                                <h3 class="h5 mb-0">{{ current_user.created_at.strftime('%d %B %Y') if current_user.created_at else 'Unknown' }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row gx-3 gy-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Total donations</p>
+                                <h3 class="h5 mb-0">{{ donation_count }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Active donations</p>
+                                <h3 class="h5 mb-0">{{ active_count }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Completed</p>
+                                <h3 class="h5 mb-0">{{ completed_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row gx-3 gy-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Unread notifications</p>
+                                <h3 class="h5 mb-0">{{ notifications_count }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="settings-summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Password last updated</p>
+                                <h3 class="h5 mb-0">{{ current_user.updated_at.strftime('%d %B %Y') if current_user.updated_at else 'Recently' }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border rounded-3 p-4 mb-4">
+                        <h3 class="h6 fw-semibold mb-3">Website operations</h3>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-3">
+                                <strong>Real-time donation sync</strong>
+                                <p class="text-muted mb-0">Donor and NGO dashboards refresh automatically with the latest donation events.</p>
+                            </li>
+                            <li class="mb-3">
+                                <strong>Notification delivery</strong>
+                                <p class="text-muted mb-0">Email alerts and platform notifications are delivered immediately when status changes.</p>
+                            </li>
+                            <li>
+                                <strong>Dashboard refresh</strong>
+                                <p class="text-muted mb-0">Recent history and active donations are visible instantly once a donation is accepted or completed.</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card border rounded-3 p-4">
+                        <h3 class="h6 fw-semibold mb-3">Security & account guard</h3>
+                        <p class="text-muted mb-2">This account is monitored for suspicious access patterns. Your session activity is handled in real time to protect your donation workflow.</p>
+                        <div class="row gx-3 gy-3">
+                            <div class="col-sm-6">
+                                <div class="settings-summary-card p-3 h-100">
+                                    <p class="text-muted mb-2">Session activity</p>
+                                    <p class="mb-0">Live monitoring active</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="settings-summary-card p-3 h-100">
+                                    <p class="text-muted mb-2">Email verification</p>
+                                    <p class="mb-0">Verified</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card profile-summary-card shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-3">Website settings</h3>
+                    <div class="mb-4">
+                        <p class="text-muted mb-2">Auto refresh</p>
+                        <span class="badge bg-success">Enabled</span>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-muted mb-2">Dashboard mode</p>
+                        <span class="badge bg-info">Real-time</span>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-2">Notification mode</p>
+                        <span class="badge bg-secondary">Immediate</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card profile-actions-card shadow-sm mt-4">
+                <div class="card-body p-4">
+                    <h3 class="h6 fw-semibold mb-3">Important links</h3>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-success">Update profile</a>
+                        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">Back to profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

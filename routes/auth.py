@@ -248,9 +248,39 @@ def login():
     return render_template("auth/login_choice.html")
 
 
-@auth_bp.route("/profile", methods=["GET", "POST"])
+@auth_bp.route("/profile")
 @login_required
 def profile():
+    donation_count = 0
+    completed_count = 0
+    active_count = 0
+    completion_rate = 0
+    if current_user.role == "donor":
+        donations = list(current_user.donations)
+        donation_count = len(donations)
+        completed_count = sum(1 for donation in donations if donation.status == "Completed")
+        active_count = sum(1 for donation in donations if donation.status == "Available")
+        completion_rate = round((completed_count / donation_count * 100), 1) if donation_count else 0
+        recent_donations = donations[:3]
+    else:
+        recent_donations = []
+
+    notifications_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+
+    return render_template(
+        "auth/profile.html",
+        donation_count=donation_count,
+        completed_count=completed_count,
+        active_count=active_count,
+        completion_rate=completion_rate,
+        notifications_count=notifications_count,
+        recent_donations=recent_donations,
+    )
+
+
+@auth_bp.route("/edit-profile", methods=["GET", "POST"])
+@login_required
+def edit_profile():
     if request.method == "POST":
         full_name = (request.form.get("full_name") or "").strip()
         phone = (request.form.get("phone") or "").strip()
@@ -261,7 +291,7 @@ def profile():
 
         if not full_name:
             flash("Full name is required.", "danger")
-            return redirect(url_for("auth.profile"))
+            return redirect(url_for("auth.edit_profile"))
 
         try:
             current_user.full_name = full_name
@@ -276,23 +306,34 @@ def profile():
         except Exception:
             db.session.rollback()
             flash("We could not update your profile right now.", "danger")
-            return redirect(url_for("auth.profile"))
+            return redirect(url_for("auth.edit_profile"))
 
         flash("Profile updated successfully.", "success")
         return redirect(url_for("auth.profile"))
 
-    completed_count = 0
+    return render_template("auth/edit_profile.html")
+
+
+@auth_bp.route("/settings")
+@login_required
+def settings():
     donation_count = 0
-    completion_rate = 0
+    completed_count = 0
+    active_count = 0
+    unread_notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+
     if current_user.role == "donor":
-        donation_count = current_user.donations.count() if hasattr(current_user.donations, 'count') else len(current_user.donations)
-        completed_count = sum(1 for donation in current_user.donations if donation.status == "Completed")
-        completion_rate = round((completed_count / donation_count * 100), 1) if donation_count else 0
+        donations = list(current_user.donations)
+        donation_count = len(donations)
+        completed_count = sum(1 for donation in donations if donation.status == "Completed")
+        active_count = sum(1 for donation in donations if donation.status == "Available")
 
     return render_template(
-        "auth/profile.html",
-        donations=[d for d in current_user.donations] if current_user.role == "donor" else [],
-        completion_rate=completion_rate,
+        "auth/settings.html",
+        donation_count=donation_count,
+        completed_count=completed_count,
+        active_count=active_count,
+        notifications_count=unread_notifications,
     )
 
 

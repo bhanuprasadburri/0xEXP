@@ -1,230 +1,184 @@
 {% extends 'base.html' %}
-{% block head_extra %}
-<style>
-    .profile-page {
-        max-width: 1060px;
-        margin: 2.5rem auto 3rem;
-        display: grid;
-        grid-template-columns: 1.18fr 0.82fr;
-        gap: 1.5rem;
-    }
-    .profile-card, .profile-actions {
-        border-radius: 28px;
-        background: rgba(255,255,255,0.9);
-        border: 1px solid rgba(15, 23, 42, 0.06);
-        box-shadow: 0 28px 80px rgba(15, 23, 42, 0.08);
-        backdrop-filter: blur(18px);
-    }
-    .profile-card {
-        padding: 2rem;
-    }
-    .profile-header {
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        margin-bottom: 1.7rem;
-    }
-    .profile-avatar {
-        width: 88px;
-        height: 88px;
-        border-radius: 22px;
-        display: grid;
-        place-items: center;
-        font-size: 2.1rem;
-        font-weight: 800;
-        color: #ffffff;
-        background: linear-gradient(135deg, #16a34a, #22c55e);
-        box-shadow: 0 16px 40px rgba(22, 163, 74, 0.18);
-    }
-    .profile-title p {
-        margin: 0 0 0.35rem;
-        font-size: 0.9rem;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #16a34a;
-        font-weight: 700;
-    }
-    .profile-title h1 {
-        margin: 0;
-        font-size: clamp(1.9rem, 2.4vw, 2.5rem);
-        font-weight: 800;
-        line-height: 1.05;
-    }
-    .profile-meta {
-        display: grid;
-        gap: 0.35rem;
-        color: #64748b;
-        margin-top: 1rem;
-    }
-    .profile-meta span {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.55rem;
-        font-size: 0.95rem;
-    }
-    .profile-meta i {
-        width: 28px;
-        height: 28px;
-        display: grid;
-        place-items: center;
-        border-radius: 10px;
-        background: rgba(22, 163, 74, 0.1);
-        color: #16a34a;
-    }
-    .profile-section {
-        margin-top: 1.75rem;
-    }
-    .profile-section h2 {
-        margin-bottom: 1rem;
-        font-size: 1.05rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-    }
-    .form-grid {
-        display: grid;
-        gap: 1rem;
-    }
-    .profile-field {
-        display: grid;
-        gap: 0.35rem;
-    }
-    .profile-field label {
-        font-weight: 600;
-        color: #334155;
-    }
-    .profile-field input {
-        border-radius: 16px;
-        border: 1px solid rgba(15, 23, 42, 0.12);
-        padding: 0.95rem 1rem;
-        font-size: 0.95rem;
-        background: #ffffff;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .profile-field input:focus {
-        border-color: #16a34a;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.08);
-    }
-    .profile-actions {
-        padding: 2rem;
-    }
-    .profile-actions h2 {
-        margin-bottom: 1rem;
-        font-size: 1.05rem;
-        font-weight: 700;
-    }
-    .profile-actions p {
-        margin-bottom: 1.5rem;
-        color: #64748b;
-        line-height: 1.75;
-    }
-    .profile-actions .btn {
-        width: 100%;
-        padding: 0.95rem 1.1rem;
-        border-radius: 16px;
-        font-weight: 700;
-    }
-    .profile-footer {
-        margin-top: 1.6rem;
-        display: grid;
-        gap: 0.85rem;
-    }
-    .profile-footer .stat-card {
-        display: grid;
-        padding: 1rem 1.2rem;
-        border-radius: 18px;
-        background: #f8fafc;
-        border: 1px solid rgba(15, 23, 42, 0.06);
-    }
-    .profile-footer .stat-card strong {
-        display: block;
-        margin-top: 0.45rem;
-        font-size: 1.05rem;
-        color: #0f172a;
-    }
-    @media (max-width: 992px) {
-        .profile-page { grid-template-columns: 1fr; }
-        .profile-actions { order: -1; }
-    }
-</style>
-{% endblock %}
 {% block content %}
-<div class="profile-page">
-    <section class="profile-card">
-        <div class="profile-header">
-            <div class="profile-avatar">{{ (current_user.full_name or current_user.name or 'U')[0]|upper }}</div>
-            <div>
-                <div class="profile-title">
-                    <p>Donor profile</p>
-                    <h1>{{ current_user.full_name or current_user.name or 'Your Name' }}</h1>
+<div class="profile-page py-4">
+    <div class="profile-header mb-4 d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+        <div>
+            <p class="text-uppercase text-success fw-bold mb-2">Account overview</p>
+            <h1 class="display-5 fw-bold">Your active 0xEXP profile</h1>
+            <p class="text-muted">View your account details, donation activity, and quick links to editing and platform settings.</p>
+        </div>
+        <div class="profile-actions d-flex flex-wrap gap-2 align-items-center">
+            {% if current_user.role == 'ngo' %}
+            <a href="{{ url_for('ngo.dashboard') }}" class="btn btn-outline-secondary">Back to dashboard</a>
+            {% else %}
+            <a href="{{ url_for('donor.dashboard') }}" class="btn btn-outline-secondary">Back to dashboard</a>
+            {% endif %}
+            <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-success"><i class="fas fa-pen me-2"></i>Edit profile</a>
+            <a href="{{ url_for('auth.settings') }}" class="btn btn-outline-primary">Settings</a>
+        </div>
+    </div>
+
+    <div class="row gx-4 gy-4">
+        <div class="col-xl-4 col-lg-5">
+            <div class="card profile-summary-card shadow-sm h-100">
+                <div class="card-body text-center px-4 py-5">
+                    <div class="profile-avatar mb-3">{{ (current_user.full_name or current_user.name or 'U')[0].upper() }}</div>
+                    <h2 class="h4 fw-bold mb-1">{{ current_user.full_name or current_user.name or 'User' }}</h2>
+                    <p class="text-muted mb-3">{{ current_user.role|capitalize }}</p>
+                    <div class="profile-detail mb-3">
+                        <span class="text-muted">Email</span>
+                        <p class="mb-0">{{ current_user.email }}</p>
+                    </div>
+                    {% if current_user.phone %}
+                    <div class="profile-detail mb-3">
+                        <span class="text-muted">Phone</span>
+                        <p class="mb-0">{{ current_user.phone }}</p>
+                    </div>
+                    {% endif %}
+                    {% if current_user.role == 'ngo' and current_user.organization_name %}
+                    <div class="profile-detail mb-3">
+                        <span class="text-muted">Organization</span>
+                        <p class="mb-0">{{ current_user.organization_name }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="profile-detail mb-0">
+                        <span class="text-muted">Joined</span>
+                        <p class="mb-0">{{ current_user.created_at.strftime('%B %Y') if current_user.created_at else 'Recently' }}</p>
+                    </div>
                 </div>
-                <div class="profile-meta">
-                    <span><i class="fas fa-envelope"></i>{{ current_user.email }}</span>
-                    <span><i class="fas fa-user-tag"></i>{{ current_user.role|capitalize }}</span>
-                    <span><i class="fas fa-calendar-check"></i>Member since {{ current_user.created_at.strftime('%b %Y') if current_user.created_at else 'recently' }}</span>
+                <div class="card-footer bg-white border-top px-4 py-4">
+                    <div class="row g-3 text-center">
+                        <div class="col-6">
+                            <div class="metric-box">
+                                <span class="metric-label">Donations</span>
+                                <strong>{{ donation_count }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-box">
+                                <span class="metric-label">Active</span>
+                                <strong>{{ active_count }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-box">
+                                <span class="metric-label">Completed</span>
+                                <strong>{{ completed_count }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-box">
+                                <span class="metric-label">Unread</span>
+                                <strong>{{ notifications_count }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card profile-actions-card shadow-sm mt-4">
+                <div class="card-body p-4">
+                    <h3 class="h6 fw-semibold mb-3">Quick actions</h3>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-success">Edit profile settings</a>
+                        <a href="{{ url_for('auth.settings') }}" class="btn btn-outline-primary">Open live settings</a>
+                        {% if current_user.role == 'donor' %}
+                        <a href="{{ url_for('donor.my_donations') }}" class="btn btn-outline-secondary">My donations</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="profile-section">
-            <h2>Personal details</h2>
-            <form method="post">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                <div class="form-grid">
-                    <div class="profile-field">
-                        <label for="full_name">Full name</label>
-                        <input id="full_name" type="text" name="full_name" value="{{ current_user.full_name or current_user.name }}" required>
+        <div class="col-xl-8 col-lg-7">
+            <div class="card profile-form-card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+                        <div>
+                            <p class="text-muted mb-1">Profile summary</p>
+                            <h2 class="h4 fw-bold mb-0">Current account details</h2>
+                        </div>
+                        <a href="{{ url_for('auth.settings') }}" class="btn btn-sm btn-outline-primary">Open settings</a>
                     </div>
-                    <div class="profile-field">
-                        <label for="email">Email address</label>
-                        <input id="email" type="email" value="{{ current_user.email }}" disabled>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Full name</p>
+                                <h3 class="h5">{{ current_user.full_name or current_user.name or 'User' }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Email</p>
+                                <h3 class="h5">{{ current_user.email }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Phone</p>
+                                <h3 class="h5">{{ current_user.phone or 'Not added' }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Address</p>
+                                <h3 class="h5">{{ current_user.address or 'Not added' }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-card p-4 h-100">
+                                <p class="text-muted mb-2">City</p>
+                                <h3 class="h5">{{ current_user.city or 'Not added' }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-card p-4 h-100">
+                                <p class="text-muted mb-2">State</p>
+                                <h3 class="h5">{{ current_user.state or 'Not added' }}</h3>
+                            </div>
+                        </div>
+                        {% if current_user.role == 'ngo' %}
+                        <div class="col-12">
+                            <div class="summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Organization</p>
+                                <h3 class="h5">{{ current_user.organization_name or 'Not added' }}</h3>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="col-12">
+                            <div class="summary-card p-4 h-100">
+                                <p class="text-muted mb-2">Notifications</p>
+                                <h3 class="h5">{{ notifications_count }} unread</h3>
+                            </div>
+                        </div>
                     </div>
-                    <div class="profile-field">
-                        <label for="phone">Phone number</label>
-                        <input id="phone" type="text" name="phone" value="{{ current_user.phone }}">
-                    </div>
-                    <div class="profile-field">
-                        <label for="address">Address</label>
-                        <input id="address" type="text" name="address" value="{{ current_user.address }}">
-                    </div>
-                    <div class="profile-field">
-                        <label for="city">City</label>
-                        <input id="city" type="text" name="city" value="{{ current_user.city }}">
-                    </div>
-                    <div class="profile-field">
-                        <label for="state">State</label>
-                        <input id="state" type="text" name="state" value="{{ current_user.state }}">
-                    </div>
-                    {% if current_user.role == 'ngo' %}
-                    <div class="profile-field">
-                        <label for="organization_name">Organization name</label>
-                        <input id="organization_name" type="text" name="organization_name" value="{{ current_user.organization_name }}">
+                    {% if recent_donations %}
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <p class="text-muted mb-1">Recent donations</p>
+                                <h3 class="h5 mb-0">Latest donation activity</h3>
+                            </div>
+                            <span class="text-success small">Live updates</span>
+                        </div>
+                        <div class="list-group">
+                            {% for donation in recent_donations %}
+                            <div class="list-group-item rounded-3 border mb-2 p-3">
+                                <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                                    <div>
+                                        <strong>{{ donation.food_name }}</strong>
+                                        <p class="mb-1 text-muted small">{{ donation.food_category }} · {{ donation.food_type }}</p>
+                                        <p class="mb-0 text-muted small">Pickup: {{ donation.pickup_address }}</p>
+                                    </div>
+                                    <span class="badge bg-success align-self-start">{{ donation.status }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                     {% endif %}
                 </div>
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">Save profile</button>
-                </div>
-            </form>
-        </div>
-    </section>
-
-    <aside class="profile-actions">
-        <h2>Account overview</h2>
-        <p>Keep your profile information current so NGOs can contact you quickly and your donations remain accurate in the system.</p>
-        <button type="button" class="btn btn-outline-primary">Update password</button>
-        <button type="button" class="btn btn-outline-secondary">Connect social login</button>
-
-        <div class="profile-footer">
-            <div class="stat-card">
-                <span>Active donations</span>
-                <strong>{{ donations|length }}</strong>
-            </div>
-            <div class="stat-card">
-                <span>Donation history</span>
-                <strong>{{ completion_rate }}% completed</strong>
             </div>
         </div>
-    </aside>
+    </div>
 </div>
 {% endblock %}
