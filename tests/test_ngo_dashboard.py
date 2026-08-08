@@ -48,6 +48,8 @@ def test_ngo_dashboard_renders_for_ngo_user():
         assert "Verified NGO" in body
         assert "Available Food Donations" in body
         assert "My Accepted Donations" in body
+        assert "Today\'s Pickups" in body
+        assert "Distribution Queue" in body
 
 
 def test_completed_donations_are_visible_on_ngo_dashboard():

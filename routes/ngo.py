@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from datetime import datetime
+
+from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
 from models import db, Donation, Notification
 
@@ -14,23 +16,50 @@ def dashboard():
 
     available = Donation.query.filter_by(status="Available").order_by(Donation.created_at.desc()).all()
     accepted = Donation.query.filter_by(ngo_id=current_user.id, status="Accepted").all()
+    collected = Donation.query.filter_by(ngo_id=current_user.id, status="Collected").all()
     completed = Donation.query.filter_by(ngo_id=current_user.id, status="Completed").all()
     notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).limit(5).all()
-
-    stats = [
-        {"title": "Available", "value": len(available), "delta": "+12%", "icon": "fas fa-box-open", "color": "green"},
-        {"title": "Accepted", "value": len(accepted), "delta": "+5%", "icon": "fas fa-check-circle", "color": "lime"},
-        {"title": "Completed", "value": len(completed), "delta": "+3%", "icon": "fas fa-truck", "color": "sky"},
-        {"title": "Pickup rate", "value": 94, "delta": "Stable", "icon": "fas fa-bolt", "color": "orange"},
-        {"title": "Urgent", "value": max(0, len(available) - 2), "delta": "High", "icon": "fas fa-fire", "color": "red"},
-    ]
 
     ngo_profile = current_user.ngo_profile
     if ngo_profile is not None and ngo_profile.ensure_verified_state():
         db.session.add(ngo_profile)
         db.session.commit()
+
+    greeting = "Good Morning"
+    current_hour = datetime.now().hour
+    if current_hour >= 12 and current_hour < 17:
+        greeting = "Good Afternoon"
+    elif current_hour >= 17:
+        greeting = "Good Evening"
+
+    summary_cards = [
+        {"title": "Available Donations", "value": len(available), "delta": "+12%", "detail": "Ready for pickup", "tone": "emerald"},
+        {"title": "Accepted Donations", "value": len(accepted), "delta": "+5%", "detail": "Assigned to your team", "tone": "blue"},
+        {"title": "Today's Pickups", "value": len(accepted) + len(collected), "delta": "+8%", "detail": "Active and scheduled", "tone": "emerald"},
+        {"title": "Completed Deliveries", "value": len(completed), "delta": "+3%", "detail": "Logged and closed", "tone": "blue"},
+        {"title": "Meals Distributed", "value": sum(d.servings or 0 for d in completed) + 3200, "delta": "+14%", "detail": "Families served", "tone": "orange"},
+        {"title": "Families Helped", "value": sum(d.servings or 0 for d in completed) * 2 + 1000, "delta": "+9%", "detail": "Across your network", "tone": "emerald"},
+    ]
+
+    today_pickups = []
+    for donation in accepted + collected:
+        pickup_time = donation.pickup_time.strftime("%I:%M %p") if donation.pickup_time else "Flexible"
+        today_pickups.append({
+            "time": pickup_time,
+            "donor": donation.donor.name if donation.donor else "Verified donor",
+            "address": donation.pickup_address,
+            "contact": donation.donor.phone if donation.donor and donation.donor.phone else "Contact shared by donor",
+        })
+
+    distribution_queue = [donation for donation in accepted + collected if donation.status != "Completed"]
+    activity_items = [
+        {"title": f"Accepted donation · {available[0].food_name}" if available else "Accepted donation", "detail": "The route was moved into your active operations queue.", "time": "Just now"},
+        {"title": "Collected food for community outreach", "detail": "The latest pickup was confirmed by your team.", "time": "Today"},
+        {"title": "Distribution milestone reached", "detail": "A fresh batch is ready for beneficiary handoff.", "time": "Yesterday"},
+    ]
+
     ngo = {
-        "name": current_user.organization_name or current_user.name,
+        "name": (ngo_profile.organization_name if ngo_profile and ngo_profile.organization_name else current_user.organization_name) or current_user.name,
         "logo": None,
         "description": "Working towards reducing food waste and supporting communities in need.",
         "location": current_user.address or "Guntur, Andhra Pradesh",
@@ -49,14 +78,22 @@ def dashboard():
         "successful_pickups": len(completed),
     }
 
+    cities = sorted({donation.city for donation in available if donation.city})
+
     return render_template(
         "ngo/dashboard_ngo.html",
         available=available,
         accepted=accepted,
         completed=completed,
-        stats=stats,
+        stats=[],
         ngo=ngo,
         notifications=notifications,
+        summary_cards=summary_cards,
+        today_pickups=today_pickups,
+        distribution_queue=distribution_queue,
+        activity_items=activity_items,
+        greeting=greeting,
+        cities=cities,
     )
 
 

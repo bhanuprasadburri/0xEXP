@@ -22,7 +22,7 @@
         <div>
             <div class="brand-block">
                 <button class="sidebar-toggle" type="button" aria-label="Toggle navigation">
-                    <i class="fas fa-bars"></i>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
                 </button>
                 <div class="brand-mark">0x</div>
                 <div class="brand-copy">
@@ -32,13 +32,15 @@
             </div>
 
             <nav class="sidebar-nav" aria-label="NGO navigation">
-                <a class="nav-link active" href="#overview"><i class="fas fa-home"></i><span>Overview</span></a>
-                <a class="nav-link" href="#available-donations"><i class="fas fa-box-open"></i><span>Available Donations</span></a>
-                <a class="nav-link" href="#accepted-donations"><i class="fas fa-check-circle"></i><span>Accepted Donations</span></a>
-                <a class="nav-link" href="#impact"><i class="fas fa-chart-line"></i><span>Impact</span></a>
-                <a class="nav-link" href="#activity"><i class="fas fa-history"></i><span>Recent Activity</span></a>
-                <a class="nav-link" href="#profile"><i class="fas fa-building"></i><span>Organization Profile</span></a>
-                <a class="nav-link" href="{{ url_for('auth.settings') }}"><i class="fas fa-sliders"></i><span>Settings</span></a>
+                <a class="nav-link active" href="#overview"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10.5V21h14V10.5"/></svg></span><span>Dashboard</span></a>
+                <a class="nav-link" href="#available-donations"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 7h14"/><path d="M7 7v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7"/><path d="M10 11h4"/></svg></span><span>Available Donations</span></a>
+                <a class="nav-link" href="#accepted-donations"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span><span>Accepted Donations</span></a>
+                <a class="nav-link" href="#pickups"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h12"/><path d="M4 12h8"/><path d="M4 17h6"/><path d="M17 6v10"/><path d="M14 9h6"/></svg></span><span>Today's Pickups</span></a>
+                <a class="nav-link" href="#queue"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 7h14"/><path d="M8 12h8"/><path d="M6 17h12"/></svg></span><span>Distribution Queue</span></a>
+                <a class="nav-link" href="#impact"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M7 16V10"/><path d="M12 16V6"/><path d="M17 16v-4"/></svg></span><span>Impact Analytics</span></a>
+                <a class="nav-link" href="#activity"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h10"/><path d="M4 18h6"/></svg></span><span>Activity</span></a>
+                <a class="nav-link" href="#profile"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 20a6 6 0 0 1 12 0"/><circle cx="12" cy="10" r="4"/></svg></span><span>Profile</span></a>
+                <a class="nav-link" href="{{ url_for('auth.settings') }}"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="3"/></svg></span><span>Settings</span></a>
             </nav>
         </div>
 
@@ -50,21 +52,24 @@
                     <span>Operations lead</span>
                 </div>
             </div>
-            <a href="{{ url_for('auth.logout') }}" class="logout-btn"><i class="fas fa-right-from-bracket"></i><span>Logout</span></a>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l-3-3 3-3"/><path d="M7 14h10"/><path d="M15 7v10"/></svg><span>Logout</span></a>
         </div>
     </aside>
 
     <div class="ngo-main">
         <header class="topbar">
-            <div class="topbar-search">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search donations, locations, and routes..." aria-label="Search">
-            </div>
+            <label class="topbar-search" for="dashboardSearch">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg>
+                <input id="dashboardSearch" type="text" placeholder="Search donations, locations, and routes..." aria-label="Search dashboard">
+            </label>
             <div class="topbar-actions">
-                <div class="date-pill" id="currentDate">Loading…</div>
+                <div class="date-pill" id="currentDateTime">Loading…</div>
+                <button class="icon-btn" id="themeToggle" type="button" aria-label="Toggle dark mode">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
                 <div class="dropdown">
                     <button class="icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
-                        <i class="fas fa-bell"></i>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17H4a1 1 0 0 1-.8-1.6l1.2-1.6V10a5 5 0 0 1 10 0v3.8l1.2 1.6A1 1 0 0 1 15 17Z"/><path d="M9 17v1a2 2 0 0 0 4 0v-1"/></svg>
                         <span class="badge-dot">{{ notifications|length if notifications else 0 }}</span>
                     </button>
                     <ul class="dropdown-menu notification-menu">
@@ -84,10 +89,10 @@
                         </div>
                     </button>
                     <ul class="dropdown-menu profile-dropdown">
-                        <li><a class="dropdown-item" href="#profile"><i class="fas fa-building"></i>Organization Profile</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}"><i class="fas fa-sliders"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="#profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 20a6 6 0 0 1 12 0"/><circle cx="12" cy="10" r="4"/></svg>Organization Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.settings') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="3"/></svg>Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-right-from-bracket"></i>Logout</a></li>
+                        <li><a class="dropdown-item danger" href="{{ url_for('auth.logout') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l-3-3 3-3"/><path d="M7 14h10"/><path d="M15 7v10"/></svg>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -105,108 +110,41 @@
                     </div>
                     <div class="hero-copy-wrap">
                         <div class="eyebrow-row">
-                            <span class="verified-pill"><i class="fas fa-circle-check"></i>✓ Verified NGO</span>
+                            <span class="verified-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 13 4 4L19 7"/></svg>Verified NGO</span>
                             <span class="mono-pill">{{ ngo.registration_status }}</span>
                         </div>
-                        <h1>{{ ngo.name }}</h1>
-                        <p class="hero-copy">{{ ngo.description }}</p>
+                        <h1>{{ greeting }}, {{ ngo.name }}</h1>
+                        <p class="hero-copy">Helping communities by reducing food waste.</p>
                         <div class="hero-meta">
-                            <span><i class="fas fa-map-marker-alt"></i>{{ ngo.location }}</span>
-                            <span><i class="fas fa-id-card"></i>{{ ngo.registration_number }}</span>
-                            <span><i class="fas fa-shield-heart"></i>Trusted by donors and communities</span>
+                            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"/><circle cx="12" cy="11" r="2"/></svg>{{ ngo.location }}</span>
+                            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16"/><path d="M7 3v4"/><path d="M17 3v4"/><rect x="4" y="5" width="16" height="14" rx="2"/></svg>{{ ngo.registration_number }}</span>
+                            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 4v5c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V7l7-4Z"/></svg>Trusted by donors and communities</span>
                         </div>
                     </div>
                 </div>
                 <div class="hero-actions">
-                    <a class="secondary-btn" href="{{ url_for('auth.profile') }}"><i class="fas fa-pen"></i>Edit Profile</a>
-                    <a class="primary-btn" href="mailto:{{ ngo.email }}"><i class="fas fa-paper-plane"></i>Contact</a>
+                    <a class="secondary-btn" href="{{ url_for('auth.profile') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit Profile</a>
+                    <a class="primary-btn" href="mailto:{{ ngo.email }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v12H4z"/><path d="m4 8 8 6 8-6"/></svg>Contact</a>
                 </div>
             </section>
 
-            <section class="impact-overview" aria-label="Operations summary">
-                <article class="stat-large">
-                    <div class="stat-icon"><i class="fas fa-hand-holding-heart"></i></div>
-                    <div>
-                        <p class="stat-label">Total Donations Received</p>
-                        <h3>{{ ngo.total_donations }}</h3>
-                        <span>Across active and completed pickups</span>
-                    </div>
-                </article>
-                <article class="stat-large">
-                    <div class="stat-icon"><i class="fas fa-utensils"></i></div>
-                    <div>
-                        <p class="stat-label">Meals Distributed</p>
-                        <h3>{{ ngo.meals_distributed }}</h3>
-                        <span>Prepared and delivered to families</span>
-                    </div>
-                </article>
-                <article class="stat-large">
-                    <div class="stat-icon"><i class="fas fa-users"></i></div>
-                    <div>
-                        <p class="stat-label">People Served</p>
-                        <h3>{{ ngo.people_served }}</h3>
-                        <span>Lives supported with dignity</span>
-                    </div>
-                </article>
-                <article class="stat-large highlight">
-                    <div class="stat-icon"><i class="fas fa-route"></i></div>
-                    <div>
-                        <p class="stat-label">Successful Pickups</p>
-                        <h3>{{ ngo.successful_pickups }}</h3>
-                        <span>Reliable handoffs and impact delivery</span>
-                    </div>
-                </article>
-            </section>
-
-            <section class="panel-card profile-card" id="profile-details">
-                <div class="section-head">
-                    <div>
-                        <p class="panel-kicker">Organization profile</p>
-                        <h2>Profile information</h2>
-                    </div>
-                    <a class="text-link" href="{{ url_for('auth.profile') }}"><i class="fas fa-pen"></i>Edit Profile</a>
-                </div>
-                <div class="profile-grid">
-                    <div class="profile-item"><span>Organization Name</span><strong>{{ ngo.name }}</strong></div>
-                    <div class="profile-item"><span>Registration Number</span><strong>{{ ngo.registration_number }}</strong></div>
-                    <div class="profile-item"><span>Founded Year</span><strong>{{ ngo.founded_year }}</strong></div>
-                    <div class="profile-item"><span>Email</span><strong>{{ ngo.email }}</strong></div>
-                    <div class="profile-item"><span>Phone</span><strong>{{ ngo.phone }}</strong></div>
-                    <div class="profile-item"><span>Address</span><strong>{{ ngo.address }}</strong></div>
-                    <div class="profile-item"><span>Website</span><strong>{{ ngo.website }}</strong></div>
-                    <div class="profile-item"><span>Areas Served</span><strong>{{ ngo.areas_served }}</strong></div>
-                </div>
-                <p class="profile-description">{{ ngo.description }}</p>
-            </section>
-
-            <section class="analytics-grid" id="impact">
-                <article class="panel-card analytics-card">
-                    <div class="section-head">
-                        <div>
-                            <p class="panel-kicker">Analytics</p>
-                            <h2>Donation activity</h2>
+            <section class="summary-grid" aria-label="Operations summary">
+                {% for card in summary_cards %}
+                <article class="stat-card">
+                    <div class="stat-card-top">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M7 16V10"/><path d="M12 16V6"/><path d="M17 16v-4"/></svg>
                         </div>
+                        <span class="stat-delta {{ card.tone }}">{{ card.delta }}</span>
                     </div>
-                    <canvas id="activityChart" height="180"></canvas>
+                    <p class="stat-label">{{ card.title }}</p>
+                    <h3>{{ card.value }}</h3>
+                    <p class="stat-copy">{{ card.detail }}</p>
+                    <svg class="sparkline" viewBox="0 0 100 28" aria-hidden="true">
+                        <path d="M0 20 C10 16, 18 12, 28 14 S48 20, 58 12 S80 6, 100 8" />
+                    </svg>
                 </article>
-                <article class="panel-card analytics-card">
-                    <div class="section-head">
-                        <div>
-                            <p class="panel-kicker">Analytics</p>
-                            <h2>Meals distributed</h2>
-                        </div>
-                    </div>
-                    <canvas id="mealsChart" height="180"></canvas>
-                </article>
-                <article class="panel-card analytics-card">
-                    <div class="section-head">
-                        <div>
-                            <p class="panel-kicker">Analytics</p>
-                            <h2>Donation status</h2>
-                        </div>
-                    </div>
-                    <canvas id="statusChart" height="180"></canvas>
-                </article>
+                {% endfor %}
             </section>
 
             <section class="content-grid">
@@ -218,20 +156,52 @@
                         </div>
                         <span class="meta-pill">{{ available|length }} live</span>
                     </div>
+                    <div class="toolbar">
+                        <label class="toolbar-field">
+                            <span>Category</span>
+                            <select id="categoryFilter">
+                                <option value="all">All categories</option>
+                                <option value="Produce">Produce</option>
+                                <option value="Cooked">Cooked</option>
+                                <option value="Bakery">Bakery</option>
+                                <option value="Packaged">Packaged</option>
+                            </select>
+                        </label>
+                        <label class="toolbar-field">
+                            <span>City</span>
+                            <select id="cityFilter">
+                                <option value="all">All cities</option>
+                                {% for city in cities %}
+                                <option value="{{ city }}">{{ city }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label class="toolbar-field">
+                            <span>Sort</span>
+                            <select id="sortFilter">
+                                <option value="deadline">Nearest deadline</option>
+                                <option value="quantity">Highest quantity</option>
+                                <option value="name">Name</option>
+                            </select>
+                        </label>
+                    </div>
                     {% if available %}
-                    <div class="donation-list">
+                    <div class="donation-list" id="donationBoard">
                         {% for donation in available %}
-                        <div class="donation-card">
+                        <article class="donation-card" data-search="{{ donation.food_name }} {{ donation.category }} {{ donation.pickup_address }} {{ donation.city or 'city' }}" data-category="{{ donation.category }}" data-city="{{ donation.city or 'Unknown' }}" data-quantity="{{ donation.servings or 0 }}" data-status="{{ donation.status }}" data-deadline="{{ donation.expiry_time.strftime('%Y-%m-%dT%H:%M') if donation.expiry_time else '' }}">
                             <div class="donation-visual">
                                 {% if donation.image %}
                                     <img src="{{ donation.image }}" alt="{{ donation.food_name }}">
                                 {% else %}
-                                    <i class="fas fa-utensils"></i>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h16"/><path d="M7 8v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V8"/><path d="M10 4h4"/><path d="M10 12h4"/></svg>
                                 {% endif %}
                             </div>
                             <div class="donation-body">
                                 <div class="donation-top">
-                                    <h3>{{ donation.food_name }}</h3>
+                                    <div>
+                                        <h3>{{ donation.food_name }}</h3>
+                                        <p>{{ donation.category or 'Food donation' }}</p>
+                                    </div>
                                     {{ status_badge(donation.status) }}
                                 </div>
                                 <div class="meta-grid">
@@ -242,8 +212,8 @@
                                 </div>
                                 <div class="footer-row">
                                     <div class="tiny-meta">
-                                        <span><i class="fas fa-clock"></i>{{ donation.pickup_time.strftime('%b %d, %H:%M') if donation.pickup_time else 'Flexible' }}</span>
-                                        <span><i class="fas fa-hourglass-end"></i>{{ donation.expiry_time.strftime('%b %d, %H:%M') if donation.expiry_time else 'Pending' }}</span>
+                                        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="8"/></svg>{{ donation.pickup_time.strftime('%b %d, %H:%M') if donation.pickup_time else 'Flexible' }}</span>
+                                        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="3"/></svg>{{ donation.expiry_time.strftime('%b %d, %H:%M') if donation.expiry_time else 'Pending' }}</span>
                                     </div>
                                     <div class="card-actions">
                                         <button class="secondary-btn small" type="button" data-bs-toggle="modal" data-bs-target="#donationModal-{{ donation.id }}">View Details</button>
@@ -254,9 +224,10 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </article>
                         {% endfor %}
                     </div>
+                    <div class="pagination" id="paginationControls" aria-label="Donation pagination"></div>
                     {% else %}
                     <div class="empty-state">
                         <h3>No food donations are currently available nearby.</h3>
@@ -285,20 +256,20 @@
                                     </div>
                                     {{ status_badge(donation.status) }}
                                 </div>
+                                <div class="progress-block">
+                                    <div class="progress-bar"><span style="width: {{ 50 if donation.status == 'Accepted' else 100 if donation.status == 'Collected' else 100 }}%"></span></div>
+                                    <span class="progress-label">Pickup in motion</span>
+                                </div>
                                 <div class="timeline-steps">
                                     <div class="timeline-step {% if donation.status in ['Accepted', 'Collected', 'Completed'] %}is-active{% endif %}">Accepted</div>
-                                    <div class="timeline-step {% if donation.status in ['Collected', 'Completed'] %}is-active{% endif %}">Pickup Scheduled</div>
-                                    <div class="timeline-step {% if donation.status == 'Completed' %}is-active{% endif %}">Collected</div>
+                                    <div class="timeline-step {% if donation.status in ['Collected', 'Completed'] %}is-active{% endif %}">Collected</div>
                                     <div class="timeline-step {% if donation.status == 'Completed' %}is-active{% endif %}">Distributed</div>
-                                    <div class="timeline-step {% if donation.status == 'Completed' %}is-active{% endif %}">Completed</div>
                                 </div>
                                 <div class="accepted-actions">
                                     {% if donation.status != 'Completed' %}
                                     <form method="post" action="{{ url_for('ngo.pickup_status', donation_id=donation.id) }}" class="action-form">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button class="secondary-btn small" type="submit">
-                                            {% if donation.status == 'Accepted' %}Mark Collected{% else %}Mark Completed{% endif %}
-                                        </button>
+                                        <button class="secondary-btn small" type="submit">{% if donation.status == 'Accepted' %}Mark Collected{% else %}Mark Completed{% endif %}</button>
                                     </form>
                                     {% endif %}
                                 </div>
@@ -313,71 +284,188 @@
                         {% endif %}
                     </article>
 
-                    <article class="panel-card" id="completed-donations">
+                    <article class="panel-card" id="pickups">
                         <div class="section-head">
                             <div>
-                                <p class="panel-kicker">History</p>
-                                <h2>Completed Donations</h2>
+                                <p class="panel-kicker">Operations</p>
+                                <h2>Today's Pickups</h2>
                             </div>
-                            <span class="meta-pill">{{ completed|length }} done</span>
+                            <span class="meta-pill">{{ today_pickups|length }} scheduled</span>
                         </div>
-                        {% if completed %}
-                        <div class="accepted-list">
-                            {% for donation in completed %}
-                            <div class="accepted-card">
-                                <div class="accepted-head">
-                                    <div>
-                                        <strong>{{ donation.food_name }}</strong>
-                                        <p>{{ donation.pickup_address }}</p>
-                                    </div>
-                                    {{ status_badge(donation.status) }}
-                                </div>
-                                <div class="footer-row">
-                                    <span class="tiny-meta"><i class="fas fa-clock"></i>{{ donation.pickup_time.strftime('%b %d, %H:%M') if donation.pickup_time else 'Flexible' }}</span>
-                                    <span class="tiny-meta"><i class="fas fa-utensils"></i>{{ donation.servings }} servings</span>
+                        {% if today_pickups %}
+                        <div class="timeline-list">
+                            {% for pickup in today_pickups %}
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div>
+                                    <strong>{{ pickup.time }}</strong>
+                                    <p>{{ pickup.donor }} · {{ pickup.address }}</p>
+                                    <span>{{ pickup.contact }}</span>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                         {% else %}
                         <div class="empty-state compact">
-                            <h3>No completed donations yet.</h3>
-                            <p>Your successful pickups will appear here as they are finalized.</p>
+                            <h3>No pickups scheduled.</h3>
                         </div>
                         {% endif %}
                     </article>
 
-                    <article class="panel-card" id="activity">
+                    <article class="panel-card" id="queue">
                         <div class="section-head">
                             <div>
-                                <p class="panel-kicker">Recent updates</p>
-                                <h2>Recent Activity</h2>
+                                <p class="panel-kicker">Distribution</p>
+                                <h2>Distribution Queue</h2>
+                            </div>
+                            <span class="meta-pill">{{ distribution_queue|length }} ready</span>
+                        </div>
+                        {% if distribution_queue %}
+                        <div class="queue-list">
+                            {% for donation in distribution_queue %}
+                            <div class="queue-row">
+                                <div>
+                                    <strong>{{ donation.food_name }}</strong>
+                                    <p>{{ donation.quantity }} · {{ donation.servings }} servings</p>
+                                </div>
+                                <div class="queue-meta">
+                                    <span>{{ donation.pickup_address }}</span>
+                                    <button class="secondary-btn small" type="button">Generate Receipt</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state compact">
+                            <h3>No distributions pending.</h3>
+                        </div>
+                        {% endif %}
+                    </article>
+                </div>
+            </section>
+
+            <section class="analytics-grid impact-grid" id="impact">
+                <article class="panel-card analytics-card">
+                    <div class="section-head">
+                        <div>
+                            <p class="panel-kicker">Impact analytics</p>
+                            <h2>Monthly Donations Received</h2>
+                        </div>
+                    </div>
+                    <canvas id="monthlyDonationsChart" height="180"></canvas>
+                </article>
+                <article class="panel-card analytics-card">
+                    <div class="section-head">
+                        <div>
+                            <p class="panel-kicker">Impact analytics</p>
+                            <h2>Meals Distributed</h2>
+                        </div>
+                    </div>
+                    <canvas id="mealsChart" height="180"></canvas>
+                </article>
+                <article class="panel-card analytics-card">
+                    <div class="section-head">
+                        <div>
+                            <p class="panel-kicker">Impact analytics</p>
+                            <h2>Food Categories</h2>
+                        </div>
+                    </div>
+                    <canvas id="categoriesChart" height="180"></canvas>
+                </article>
+                <article class="panel-card analytics-card">
+                    <div class="section-head">
+                        <div>
+                            <p class="panel-kicker">Impact analytics</p>
+                            <h2>Distribution Success Rate</h2>
+                        </div>
+                    </div>
+                    <canvas id="successRateChart" height="180"></canvas>
+                </article>
+                <article class="panel-card analytics-card">
+                    <div class="section-head">
+                        <div>
+                            <p class="panel-kicker">Impact analytics</p>
+                            <h2>Waste Reduction</h2>
+                        </div>
+                    </div>
+                    <canvas id="wasteChart" height="180"></canvas>
+                </article>
+                <article class="panel-card analytics-card">
+                    <div class="section-head">
+                        <div>
+                            <p class="panel-kicker">Impact analytics</p>
+                            <h2>Families Helped</h2>
+                        </div>
+                    </div>
+                    <canvas id="familiesChart" height="180"></canvas>
+                </article>
+            </section>
+
+            <section class="content-grid lower-grid">
+                <article class="panel-card" id="activity">
+                    <div class="section-head">
+                        <div>
+                            <p class="panel-kicker">Recent updates</p>
+                            <h2>Activity Timeline</h2>
+                        </div>
+                    </div>
+                    <ul class="activity-list">
+                        {% for item in activity_items %}
+                        <li>
+                            <div class="activity-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div>
+                            <div>
+                                <strong>{{ item.title }}</strong>
+                                <p>{{ item.detail }} · {{ item.time }}</p>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </article>
+
+                <article class="panel-card" id="notifications">
+                    <div class="section-head">
+                        <div>
+                            <p class="panel-kicker">Operations</p>
+                            <h2>Notifications</h2>
+                        </div>
+                        <span class="meta-pill">{{ notifications|length }} active</span>
+                    </div>
+                    {% if notifications %}
+                    <div class="notification-list">
+                        {% for notification in notifications %}
+                        <div class="notification-item">
+                            <div class="notification-badge"></div>
+                            <div>
+                                <strong>{{ notification.title or 'Notification' }}</strong>
+                                <p>{{ notification.message }}</p>
+                                <span>{{ notification.created_at.strftime('%b %d, %H:%M') if notification.created_at else 'Now' }}</span>
                             </div>
                         </div>
-                        <ul class="activity-list">
-                            <li>
-                                <i class="fas fa-circle-check"></i>
-                                <div>
-                                    <strong>Accepted donation from Green Leaf Restaurant</strong>
-                                    <p>2 hours ago</p>
-                                </div>
-                            </li>
-                            <li>
-                                <i class="fas fa-truck"></i>
-                                <div>
-                                    <strong>Completed pickup for community support</strong>
-                                    <p>Yesterday</p>
-                                </div>
-                            </li>
-                            <li>
-                                <i class="fas fa-utensils"></i>
-                                <div>
-                                    <strong>Distributed 120 meals across the district</strong>
-                                    <p>2 days ago</p>
-                                </div>
-                            </li>
-                        </ul>
-                    </article>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state compact">
+                        <h3>No notifications.</h3>
+                    </div>
+                    {% endif %}
+                </article>
+            </section>
+
+            <section class="panel-card profile-panel" id="profile-details">
+                <div class="section-head">
+                    <div>
+                        <p class="panel-kicker">Operations center</p>
+                        <h2>Profile & Settings</h2>
+                    </div>
+                    <a class="text-link" href="{{ url_for('auth.profile') }}">Edit Profile</a>
+                </div>
+                <div class="profile-grid">
+                    <div class="profile-item"><span>Organization Name</span><strong>{{ ngo.name }}</strong></div>
+                    <div class="profile-item"><span>Registration Number</span><strong>{{ ngo.registration_number }}</strong></div>
+                    <div class="profile-item"><span>Email</span><strong>{{ ngo.email }}</strong></div>
+                    <div class="profile-item"><span>Phone</span><strong>{{ ngo.phone }}</strong></div>
+                    <div class="profile-item"><span>Address</span><strong>{{ ngo.address }}</strong></div>
+                    <div class="profile-item"><span>Operating Areas</span><strong>{{ ngo.areas_served }}</strong></div>
                 </div>
             </section>
         </main>
@@ -401,7 +489,7 @@
             {% if donation.image %}
                 <img src="{{ donation.image }}" alt="{{ donation.food_name }}">
             {% else %}
-                <i class="fas fa-utensils"></i>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h16"/><path d="M7 8v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V8"/><path d="M10 4h4"/><path d="M10 12h4"/></svg>
             {% endif %}
           </div>
           <div class="detail-copy">
